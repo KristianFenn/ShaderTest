@@ -57,13 +57,32 @@ V2P VShader(VSInput input)
 
 float4 PShader(V2P input) : COLOR
 {
+    float4 lightColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
+    float3 lightVector = normalize(LightPositionInViewSpace);
+    float3 normalVector = normalize(input.ViewNormal);
+    
+    // Ambient colour
+    float4 ambientColor = Color * 0.3f;
+    
+    float incidence = clamp(dot(lightVector, normalVector), 0.0f, 1.0f);
+    
+    float4 diffuseColor = ambientColor * lightColor * incidence;
+    
+    float3 cameraDir = normalize(-input.ViewPosition.xyz);
+    float3 reflectVector = reflect(-lightVector, normalVector);
+    float specularStrength = clamp(dot(cameraDir, reflectVector), 0.0f, 1.0f);
+    
+    float4 specularColor = lightColor * pow(specularStrength, 5);
+    
     float sampledDepth = ShadowMap.Sample(ShadowMapSampler, input.SMPosition).r;
+    float shadowMapBias = 0.001f * tan(acos(incidence));
+    shadowMapBias = clamp(shadowMapBias, 0, 0.01f);
     
-    float incidence = clamp(dot(normalize(LightPositionInViewSpace), normalize(input.ViewNormal)), -0.1f, 1.0f);
-    float shadowScalar = sampledDepth < input.SMDepth ? -0.1f : 1.0f;
-    float colorScalar = mad(min(incidence, shadowScalar), 0.7f, 0.3f);
+    float shadowScalar = sampledDepth < input.SMDepth - shadowMapBias ? 0.0f : 1.0f;
     
-    return float4(input.Color.rgb * colorScalar, 1.0f);
+    return float4(ambientColor.rgb +
+        shadowScalar * diffuseColor.rgb +
+        shadowScalar * specularColor.rgb, 1.0f);
 }
 
 float4 PShaderNormal(V2P input) : COLOR

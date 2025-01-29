@@ -178,7 +178,7 @@ namespace ShaderTest
 
             _lightView = Matrix.CreateLookAt(_lightPos, Vector3.Zero, Vector3.Up);
 
-            _lightPosInView = Vector3.Normalize(Vector3.Transform(_lightPos, _view));
+            _lightPosInView = Vector3.Normalize(Vector3.TransformNormal(_lightPos, _view));
 
             _worldToLight = _lightView * _lightProjection;
             _worldToScreen = _view * _projection;
@@ -215,7 +215,7 @@ namespace ShaderTest
             _spriteBatch.Begin();
 
             _spriteBatch.Draw(_shadowMap, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 0.1f, SpriteEffects.None, 1f);
-            _spriteBatch.DrawString(_arial, _lightPosInView.ToString(), new Vector2(10f, 210f), Color.White);
+            //_spriteBatch.DrawString(_arial, _lightPosInView.ToString(), new Vector2(10f, 210f), Color.White);
 
             _spriteBatch.End();
 
@@ -230,21 +230,7 @@ namespace ShaderTest
             foreach (var pass in _lineEffect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                //GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, lightToOriginVertices, 0, 1);
-            }
-
-            VertexPositionColor[] lightInViewToOriginVertices = [
-                new VertexPositionColor(Vector3.Transform(Vector3.Zero, _view), Color.Red),
-                new VertexPositionColor(_lightPosInView, Color.Red),
-            ];
-
-            _lineEffect.View = Matrix.Identity;
-            _lineEffect.Projection = _projection;
-
-            foreach (var pass in _lineEffect.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-                GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, lightInViewToOriginVertices, 0, 1);
+                GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, lightToOriginVertices, 0, 1);
             }
 
             base.Draw(gameTime);
