@@ -46,6 +46,12 @@ namespace ShaderTest
             IsMouseVisible = true;
             _graphics.PreferredBackBufferWidth = 1280;
             _graphics.PreferredBackBufferHeight = 720;
+            _graphics.PreferMultiSampling = true;
+
+            _graphics.PreparingDeviceSettings += (object sender, PreparingDeviceSettingsEventArgs e) =>
+            {
+                e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
+            };
         }
 
         protected override void Initialize()
@@ -57,7 +63,7 @@ namespace ShaderTest
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            _sphere = Content.Load<Model>("IcoSphere");
+            _sphere = Content.Load<Model>("UVSphere");
             _teapot = Content.Load<Model>("Teapot");
             _effect = Content.Load<Effect>("Shaders/Test");
             _depthEffect = Content.Load<Effect>("Shaders/Depth");
@@ -192,7 +198,7 @@ namespace ShaderTest
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            GraphicsDevice.RasterizerState = RasterizerState.CullClockwise;
 
             GraphicsDevice.SetRenderTarget(_shadowMap);
             GraphicsDevice.Clear(Color.White);
@@ -202,6 +208,7 @@ namespace ShaderTest
             DrawTeapot(_depthEffect, _depthEffect.Techniques["RenderDepth"]);
 
             GraphicsDevice.SetRenderTarget(null);
+            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
             GraphicsDevice.Clear(Color.Black);
 

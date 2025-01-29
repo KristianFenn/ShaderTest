@@ -8,6 +8,8 @@ float4x4 ModelToScreen;
 float4 Color;
 float3 LightPositionInViewSpace;
 
+static const int ShadowSamples = 32;
+
 Texture2D ShadowMap;
 SamplerState ShadowMapSampler = sampler_state
 {
@@ -35,6 +37,12 @@ struct V2P
     float4 Color : COLOR;
 };
 
+float2 randomOffset(float4 seed)
+{
+    float dot_product = dot(seed, float4(12.9898, 78.233, 45.164, 94.673));
+    return float2(frac(sin(dot_product) * 43758.5453), frac(sin(dot_product) * 68654.4865));
+}
+
 V2P VShader(VSInput input)
 {
     V2P output;
@@ -44,7 +52,7 @@ V2P VShader(VSInput input)
     output.Color = Color;
     
     float4 lightPosition = mul(input.Position, ModelToLight);
-    float2 shadowMapCoord = mad(0.5f, lightPosition.xy / lightPosition.w, float2(0.5f, 0.5f));
+    float2 shadowMapCoord = mad(lightPosition.xy / lightPosition.w, 0.5f, float2(0.5f, 0.5f));
     shadowMapCoord.y = 1.0f - shadowMapCoord.y;
     
     output.SMPosition = shadowMapCoord;
@@ -57,32 +65,45 @@ V2P VShader(VSInput input)
 
 float4 PShader(V2P input) : COLOR
 {
-    float4 lightColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
+    float3 lightColor = float3(1.0f, 1.0f, 1.0f);
     float3 lightVector = normalize(LightPositionInViewSpace);
     float3 normalVector = normalize(input.ViewNormal);
     
     // Ambient colour
-    float4 ambientColor = Color * 0.3f;
+    float3 ambientColor = Color.rgb * 0.3f;
     
-    float incidence = clamp(dot(lightVector, normalVector), 0.0f, 1.0f);
+    // diffuse color
+    float incidence = clamp(dot(normalVector, lightVector), 0.0f, 1.0f);
+    float3 diffuseColor = ambientColor * lightColor * incidence;
     
-    float4 diffuseColor = ambientColor * lightColor * incidence;
-    
+    // specular color
     float3 cameraDir = normalize(-input.ViewPosition.xyz);
     float3 reflectVector = reflect(-lightVector, normalVector);
     float specularStrength = clamp(dot(cameraDir, reflectVector), 0.0f, 1.0f);
+    float3 specularColor = lightColor * pow(specularStrength, 5);
     
-    float4 specularColor = lightColor * pow(specularStrength, 5);
+    float shadowMapBias = 0.0005f * tan(acos(incidence));
+    shadowMapBias = clamp(shadowMapBias, 0, 0.001f);
     
-    float sampledDepth = ShadowMap.Sample(ShadowMapSampler, input.SMPosition).r;
-    float shadowMapBias = 0.001f * tan(acos(incidence));
-    shadowMapBias = clamp(shadowMapBias, 0, 0.01f);
+    float shadowScalar = 1.0f;
     
-    float shadowScalar = sampledDepth < input.SMDepth - shadowMapBias ? 0.0f : 1.0f;
+    // shadow mappping
+    for (int i = 0; i < ShadowSamples; i++)
+    {
+        float4 seed = float4(i, input.ViewPosition.xyz);
+        
+        float2 samplePosition = input.SMPosition + (randomOffset(seed) / 500.0f);
+        
+        float sampledDepth = ShadowMap.Sample(ShadowMapSampler, samplePosition).r;
+        if (sampledDepth < input.SMDepth - shadowMapBias)
+        {
+            shadowScalar -= (1.0f / ShadowSamples);
+        }
+    }
     
-    return float4(ambientColor.rgb +
-        shadowScalar * diffuseColor.rgb +
-        shadowScalar * specularColor.rgb, 1.0f);
+    return float4(ambientColor +
+        shadowScalar * diffuseColor +
+        shadowScalar * specularColor, Color.a);
 }
 
 float4 PShaderNormal(V2P input) : COLOR
