@@ -1,7 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using ShaderTest.Shaders;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ShaderTest
@@ -12,10 +14,8 @@ namespace ShaderTest
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
-        private Model _sphere;
-        private Model _teapot;
-        private Effect _effect;
-        private Effect _depthEffect;
+        private ShadedEffect _shadedEffect;
+        private ShadowMapEffect _shadowMapEffect;
         private SpriteFont _arial;
         private VertexBuffer _floorVertexBuffer;
         private IndexBuffer _floorIndexBuffer;
@@ -24,20 +24,16 @@ namespace ShaderTest
         private Matrix _view;
         private Matrix _projection;
         private Matrix _lightView;
-        private Matrix _worldToLight;
-        private Matrix _worldToScreen;
-        private Vector3 _lightPosInView;
         private Matrix _lightProjection;
         private Vector3 _lightRotateAxis;
         private Matrix _floorWorld;
-        private Matrix _teapotWorld;
-        private Matrix[] _sphereWorld;
-        private Color[] _sphereColors;
 
         private RenderTarget2D _shadowMap;
         private BasicEffect _lineEffect;
         private KeyboardState _lastKb;
         private MouseState _lastMouse;
+
+        private List<SimpleEntity> _entities;
 
         public Game1()
         {
@@ -63,11 +59,15 @@ namespace ShaderTest
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            _sphere = Content.Load<Model>("UVSphere");
-            _teapot = Content.Load<Model>("Teapot");
-            _effect = Content.Load<Effect>("Shaders/Test");
-            _depthEffect = Content.Load<Effect>("Shaders/Depth");
+            var sphere = Content.Load<Model>("UVSphere");
+            var teapot = Content.Load<Model>("Teapot");
+            var cabinet = Content.Load<Model>("Cabinet");
+            _shadedEffect = new ShadedEffect(Content.Load<Effect>("Shaders/Test"));
+            _shadowMapEffect = new ShadowMapEffect(Content.Load<Effect>("Shaders/Depth"));
             _arial = Content.Load<SpriteFont>("Arial");
+
+            _shadedEffect.Technique = ShadedEffectTechniques.DrawShaded;
+            _shadowMapEffect.CurrentTechnique = _shadowMapEffect.Techniques["RenderDepth"];
 
             _floorVertexBuffer = new VertexBuffer(GraphicsDevice, typeof(VertexPositionColorNormal), 4, BufferUsage.WriteOnly);
             _floorIndexBuffer = new IndexBuffer(GraphicsDevice, IndexElementSize.SixteenBits, 6, BufferUsage.WriteOnly);
@@ -86,27 +86,10 @@ namespace ShaderTest
 
             var halfFloor = _floorSize / 2;
 
+            _entities = new List<SimpleEntity>();
+
             _floorWorld = Matrix.CreateScale(_floorSize)
                 * Matrix.CreateTranslation(-halfFloor, -5f, -halfFloor);
-
-            _teapotWorld = Matrix.CreateScale(2f) *
-                Matrix.CreateTranslation(0f, -5f, 0f);
-
-            _sphereWorld = [
-                Matrix.CreateTranslation( 0f,  0f,  0f) * Matrix.CreateRotationZ(1f),
-                Matrix.CreateTranslation( 2f,  0f,  2f),
-                Matrix.CreateTranslation(-4f,  0f,  0f),
-                Matrix.CreateTranslation( 0f,  2f, -2f),
-                Matrix.CreateTranslation(-2f, -2f,  0f),
-            ];
-
-            _sphereColors = [
-                Color.Red,
-                Color.Green,
-                Color.Blue,
-                Color.Orange,
-                Color.Orchid
-            ];
 
             _cameraPos = new Vector3(3);
             _lightPos = new Vector3(10);
@@ -124,6 +107,44 @@ namespace ShaderTest
             {
                 VertexColorEnabled = true
             };
+
+            //InitialiseTeapot(teapot);
+            InitialiseCabinet(cabinet);
+            //InitialiseSpheres(sphere);
+        }
+
+        private void InitialiseTeapot(Model teapotModel)
+        {
+            _entities.Add(new SimpleEntity(teapotModel, Matrix.CreateScale(2f) * Matrix.CreateTranslation(0f, -5f, 0f), true, Color.Cyan));
+        }
+
+        private void InitialiseCabinet(Model cabinetModel)
+        {
+            _entities.Add(new SimpleEntity(cabinetModel, Matrix.CreateScale(2f) * Matrix.CreateTranslation(0f, -2f, 0f), true, Color.Cyan));
+        }
+
+        private void InitialiseSpheres(Model sphereModel)
+        {
+            Matrix[] sphereWorld = [
+                Matrix.CreateTranslation( 0f,  0f,  0f) * Matrix.CreateRotationZ(1f),
+                Matrix.CreateTranslation( 2f,  0f,  2f),
+                Matrix.CreateTranslation(-4f,  0f,  0f),
+                Matrix.CreateTranslation( 0f,  2f, -2f),
+                Matrix.CreateTranslation(-2f, -2f,  0f),
+            ];
+
+            Color[] sphereColors = [
+                Color.Red,
+                Color.Green,
+                Color.Blue,
+                Color.Orange,
+                Color.Orchid
+            ];
+
+            for (int i = 0; i < sphereWorld.Length; i++)
+            {
+                _entities.Add(new SimpleEntity(sphereModel, sphereWorld[i], true, sphereColors[i]));
+            }
         }
 
         protected override void Update(GameTime gameTime)
@@ -181,13 +202,7 @@ namespace ShaderTest
             }
 
             _view = Matrix.CreateLookAt(_cameraPos, Vector3.Zero, Vector3.Up);
-
             _lightView = Matrix.CreateLookAt(_lightPos, Vector3.Zero, Vector3.Up);
-
-            _lightPosInView = Vector3.Normalize(Vector3.TransformNormal(_lightPos, _view));
-
-            _worldToLight = _lightView * _lightProjection;
-            _worldToScreen = _view * _projection;
 
             _lastKb = currentKb;
             _lastMouse = currentMouse;
@@ -200,29 +215,35 @@ namespace ShaderTest
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             GraphicsDevice.RasterizerState = RasterizerState.CullClockwise;
 
+            // Shadow map
             GraphicsDevice.SetRenderTarget(_shadowMap);
             GraphicsDevice.Clear(Color.White);
 
-            // Shadow map
-            //DrawSpheres(_depthEffect, _depthEffect.Techniques["RenderDepth"]);
-            DrawTeapot(_depthEffect, _depthEffect.Techniques["RenderDepth"]);
+            var renderContext = new RenderContext(_view, _projection, _lightView, _lightProjection, _lightPos, _shadowMap);
+
+            foreach (var entity in _entities)
+            {
+                if (!entity.IncludeInShadowMap) continue;
+
+                entity.Draw(GraphicsDevice, _shadowMapEffect, renderContext);
+            }
 
             GraphicsDevice.SetRenderTarget(null);
             GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
             GraphicsDevice.Clear(Color.Black);
 
-            _effect.Parameters["ShadowMapSampler+ShadowMap"].SetValue(_shadowMap);
-            _effect.Parameters["LightPositionInViewSpace"].SetValue(_lightPosInView);
+            DrawFloor(_shadedEffect, renderContext);
 
-            DrawTeapot(_effect, _effect.Techniques["DrawShaded"]);
-            //DrawSpheres(_effect, _effect.Techniques["DrawShaded"]);
-            DrawFloor(_effect, _effect.Techniques["DrawShaded"]);
+            foreach (var entity in _entities)
+            {
+                _shadedEffect.Color = entity.Color;
+                entity.Draw(GraphicsDevice, _shadedEffect, renderContext);
+            }
 
             _spriteBatch.Begin();
 
             _spriteBatch.Draw(_shadowMap, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 0.1f, SpriteEffects.None, 1f);
-            //_spriteBatch.DrawString(_arial, _lightPosInView.ToString(), new Vector2(10f, 210f), Color.White);
 
             _spriteBatch.End();
 
@@ -243,80 +264,19 @@ namespace ShaderTest
             base.Draw(gameTime);
         }
 
-        private void DrawFloor(Effect effect, EffectTechnique effectTechnique)
+        private void DrawFloor(BaseEffect effect, RenderContext context)
         {
             GraphicsDevice.SetVertexBuffer(_floorVertexBuffer);
             GraphicsDevice.Indices = _floorIndexBuffer;
 
-            effect.Parameters["Color"].SetValue(Color.Gray.ToVector4());
-            effect.Parameters["ModelToLight"].SetValue(_floorWorld * _worldToLight);
-            effect.Parameters["ModelToScreen"].SetValue(_floorWorld * _worldToScreen);
-            effect.Parameters["ModelToView"].SetValue(_floorWorld * _view);
-            effect.Parameters["NormalToView"].SetValue(CalculateNormalMatrix(_floorWorld * _view));
+            effect.ApplyRenderContext(_floorWorld, context);
 
-            foreach (var pass in effectTechnique.Passes)
+            effect.Parameters["Color"].SetValue(Color.Gray.ToVector4());
+
+            foreach (var pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
                 GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 2);
-            }
-        }
-
-        private void DrawTeapot(Effect effect, EffectTechnique effectTechnique)
-        {
-            effect.Parameters["ModelToLight"].SetValue(_teapotWorld * _worldToLight);
-
-            if (effect.Name == "Shaders/Test")
-            {
-                effect.Parameters["Color"].SetValue(Color.Red.ToVector4());
-                effect.Parameters["ModelToView"].SetValue(_teapotWorld * _view);
-                effect.Parameters["ModelToScreen"].SetValue(_teapotWorld * _worldToScreen);
-                effect.Parameters["NormalToView"].SetValue(CalculateNormalMatrix(_teapotWorld * _view));
-            }
-
-            foreach (var mesh in _teapot.Meshes.SelectMany(m => m.MeshParts))
-            {
-                GraphicsDevice.SetVertexBuffer(mesh.VertexBuffer);
-                GraphicsDevice.Indices = mesh.IndexBuffer;
-
-                foreach (var pass in effectTechnique.Passes)
-                {
-                    pass.Apply();
-                    GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, mesh.VertexOffset, mesh.StartIndex, mesh.PrimitiveCount);
-                }
-            }
-        }
-
-        private static Matrix CalculateNormalMatrix(Matrix worldToView)
-        {
-            worldToView.Translation = Vector3.Zero;
-            return Matrix.Transpose(Matrix.Invert(worldToView));
-        }
-
-        private void DrawSpheres(Effect effect, EffectTechnique effectTechnique)
-        {
-            for (int i = 0; i < _sphereWorld.Length; i++)
-            {
-                effect.Parameters["ModelToLight"].SetValue(_sphereWorld[i] * _worldToLight);
-
-                if (effect.Name == "Shaders/Test")
-                {
-                    effect.Parameters["Color"].SetValue(_sphereColors[i].ToVector4());
-                    effect.Parameters["ModelToView"].SetValue(_sphereWorld[i] * _view);
-                    effect.Parameters["ModelToScreen"].SetValue(_sphereWorld[i] * _worldToScreen);
-                    effect.Parameters["NormalToView"].SetValue(CalculateNormalMatrix(_sphereWorld[i] * _view));
-                }
-
-                foreach (var mesh in _sphere.Meshes.SelectMany(m => m.MeshParts))
-                {
-                    GraphicsDevice.SetVertexBuffer(mesh.VertexBuffer);
-                    GraphicsDevice.Indices = mesh.IndexBuffer;
-
-                    foreach (var pass in effectTechnique.Passes)
-                    {
-                        pass.Apply();
-                        GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, mesh.VertexOffset, mesh.StartIndex, mesh.PrimitiveCount);
-                    }
-                }
             }
         }
     }

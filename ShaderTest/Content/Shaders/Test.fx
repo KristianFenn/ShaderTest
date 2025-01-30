@@ -6,7 +6,7 @@ float3x3 NormalToView;
 float4x4 ModelToScreen;
 
 float4 Color;
-float3 LightPositionInViewSpace;
+float3 LightPosition;
 
 static const int ShadowSamples = 32;
 
@@ -66,28 +66,25 @@ V2P VShader(VSInput input)
 float4 PShader(V2P input) : COLOR
 {
     float3 lightColor = float3(1.0f, 1.0f, 1.0f);
-    float3 lightVector = normalize(LightPositionInViewSpace);
+    float3 lightVector = normalize(LightPosition);
     float3 normalVector = normalize(input.ViewNormal);
     
     // Ambient colour
-    float3 ambientColor = Color.rgb * 0.3f;
+    float3 ambientColor = Color.rgb * 0.1f;
     
     // diffuse color
     float incidence = clamp(dot(normalVector, lightVector), 0.0f, 1.0f);
-    float3 diffuseColor = ambientColor * lightColor * incidence;
+    float3 diffuseColor = Color.rgb * lightColor * incidence;
     
     // specular color
     float3 cameraDir = normalize(-input.ViewPosition.xyz);
     float3 reflectVector = reflect(-lightVector, normalVector);
     float specularStrength = clamp(dot(cameraDir, reflectVector), 0.0f, 1.0f);
-    float3 specularColor = lightColor * pow(specularStrength, 5);
-    
-    float shadowMapBias = 0.0005f * tan(acos(incidence));
-    shadowMapBias = clamp(shadowMapBias, 0, 0.001f);
-    
-    float shadowScalar = 1.0f;
+    float3 specularColor = lightColor * pow(specularStrength, 7);
     
     // shadow mappping
+    float shadowScalar = 1.0f;
+    
     for (int i = 0; i < ShadowSamples; i++)
     {
         float4 seed = float4(i, input.ViewPosition.xyz);
@@ -95,7 +92,7 @@ float4 PShader(V2P input) : COLOR
         float2 samplePosition = input.SMPosition + (randomOffset(seed) / 500.0f);
         
         float sampledDepth = ShadowMap.Sample(ShadowMapSampler, samplePosition).r;
-        if (sampledDepth < input.SMDepth - shadowMapBias)
+        if (sampledDepth <= input.SMDepth)
         {
             shadowScalar -= (1.0f / ShadowSamples);
         }
@@ -115,7 +112,7 @@ float4 PShaderNormal(V2P input) : COLOR
 
 float4 PShaderIncidence(V2P input) : COLOR
 {
-    float incidence = clamp(dot(normalize(LightPositionInViewSpace), normalize(input.ViewNormal)), 0.0f, 1.0f);
+    float incidence = clamp(dot(normalize(LightPosition), normalize(input.ViewNormal)), 0.0f, 1.0f);
     
     return float4(incidence, incidence, incidence, 1.0f);
 }
