@@ -50,6 +50,12 @@ namespace ShaderTest.Shaders
             set => Parameters["ShadowMapSampler+ShadowMap"].SetValue(value);
         }
 
+        public Texture2D Texture
+        {
+            get => Parameters["TextureSampler+Texture"].GetValueTexture2D();
+            set => Parameters["TextureSampler+Texture"].SetValue(value);
+        }
+
         private ShadedEffectTechniques _technique = ShadedEffectTechniques.DrawShaded;
 
         public ShadedEffectTechniques Technique

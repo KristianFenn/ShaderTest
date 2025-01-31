@@ -9,6 +9,7 @@ namespace ShaderTest.Shaders
     public enum ShadedEffectTechniques
     {
         DrawShaded,
+        DrawTextured,
         DrawNormals,
         DrawIncidence
     }

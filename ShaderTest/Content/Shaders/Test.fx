@@ -10,7 +10,7 @@ float3 LightPosition;
 
 static const int ShadowSamples = 32;
 
-Texture2D ShadowMap;
+Texture2D<float> ShadowMap;
 SamplerState ShadowMapSampler = sampler_state
 {
     Texture = (ShadowMap);
@@ -21,19 +21,31 @@ SamplerState ShadowMapSampler = sampler_state
     AddressV = Wrap;
 };
 
+Texture2D<float4> Texture;
+SamplerState TextureSampler = sampler_state
+{
+    Texture = (Texture);
+    Filter = ANISOTROPIC;
+    MaxAnisotropy = 16;
+    AddressU = Wrap;
+    AddressV = Wrap;
+};
+
 struct VSInput
 {
     float4 Position : POSITION0;
     float3 Normal : NORMAL0;
+    float2 TextureCoords : TEXCOORD0;
 };
 
 struct V2P
 {
     float4 Position : SV_Position;
-    float4 ViewPosition : TEXCOORD0;
-    float3 ViewNormal : TEXCOORD1;
-    float2 SMPosition : TEXCOORD2;
-    float SMDepth : TEXCOORD3;
+    float2 TextureCoords : TEXCOORD0;
+    float4 ViewPosition : TEXCOORD1;
+    float3 ViewNormal : TEXCOORD2;
+    float2 SMPosition : TEXCOORD3;
+    float SMDepth : TEXCOORD4;
     float4 Color : COLOR;
 };
 
@@ -59,22 +71,23 @@ V2P VShader(VSInput input)
     output.SMDepth = lightPosition.z / lightPosition.w;
     
     output.ViewNormal = mul(input.Normal, NormalToView);
+    output.TextureCoords = input.TextureCoords;
     
     return output;
 }
 
-float4 PShader(V2P input) : COLOR
+float4 ApplyLightingModel(V2P input, float4 color)
 {
     float3 lightColor = float3(1.0f, 1.0f, 1.0f);
     float3 lightVector = normalize(LightPosition);
     float3 normalVector = normalize(input.ViewNormal);
     
     // Ambient colour
-    float3 ambientColor = Color.rgb * 0.1f;
+    float3 ambientColor = color.rgb * 0.1f;
     
     // diffuse color
     float incidence = clamp(dot(normalVector, lightVector), 0.0f, 1.0f);
-    float3 diffuseColor = Color.rgb * lightColor * incidence;
+    float3 diffuseColor = color.rgb * lightColor * incidence;
     
     // specular color
     float3 cameraDir = normalize(-input.ViewPosition.xyz);
@@ -91,7 +104,7 @@ float4 PShader(V2P input) : COLOR
         
         float2 samplePosition = input.SMPosition + (randomOffset(seed) / 500.0f);
         
-        float sampledDepth = ShadowMap.Sample(ShadowMapSampler, samplePosition).r;
+        float sampledDepth = ShadowMap.Sample(ShadowMapSampler, samplePosition);
         if (sampledDepth <= input.SMDepth)
         {
             shadowScalar -= (1.0f / ShadowSamples);
@@ -100,7 +113,21 @@ float4 PShader(V2P input) : COLOR
     
     return float4(ambientColor +
         shadowScalar * diffuseColor +
-        shadowScalar * specularColor, Color.a);
+        shadowScalar * specularColor, color.a);
+}
+
+float4 PShaderColor(V2P input) : COLOR
+{
+    return ApplyLightingModel(input, Color);
+
+}
+
+float4 PShaderTextureColor(V2P input) : COLOR
+{
+    float4 color = Color * Texture.Sample(TextureSampler, input.TextureCoords);
+    
+    return ApplyLightingModel(input, color);
+
 }
 
 float4 PShaderNormal(V2P input) : COLOR
@@ -122,7 +149,16 @@ technique DrawShaded
     pass P0
     {
         VertexShader = compile VS_SHADERMODEL VShader();
-        PixelShader = compile PS_SHADERMODEL PShader();
+        PixelShader = compile PS_SHADERMODEL PShaderColor();
+    }
+}
+
+technique DrawTextured
+{
+    pass P0
+    {
+        VertexShader = compile VS_SHADERMODEL VShader();
+        PixelShader = compile PS_SHADERMODEL PShaderTextureColor();
     }
 }
 

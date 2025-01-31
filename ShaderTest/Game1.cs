@@ -120,7 +120,8 @@ namespace ShaderTest
 
         private void InitialiseCabinet(Model cabinetModel)
         {
-            _entities.Add(new SimpleEntity(cabinetModel, Matrix.CreateScale(2f) * Matrix.CreateTranslation(0f, -2f, 0f), true, Color.Cyan));
+            var effect = (BasicEffect)cabinetModel.Meshes[0].Effects[0];
+            _entities.Add(new SimpleEntity(cabinetModel, Matrix.CreateScale(2f) * Matrix.CreateTranslation(0f, -2f, 0f), true, Color.White, effect.Texture));
         }
 
         private void InitialiseSpheres(Model sphereModel)
@@ -238,6 +239,17 @@ namespace ShaderTest
             foreach (var entity in _entities)
             {
                 _shadedEffect.Color = entity.Color;
+                _shadedEffect.Texture = entity.Texture;
+
+                if (_shadedEffect.Texture != null)
+                {
+                    _shadedEffect.Technique = ShadedEffectTechniques.DrawTextured;
+                }
+                else
+                {
+                    _shadedEffect.Technique = ShadedEffectTechniques.DrawShaded;
+                }
+
                 entity.Draw(GraphicsDevice, _shadedEffect, renderContext);
             }
 
@@ -264,12 +276,13 @@ namespace ShaderTest
             base.Draw(gameTime);
         }
 
-        private void DrawFloor(BaseEffect effect, RenderContext context)
+        private void DrawFloor(ShadedEffect effect, RenderContext context)
         {
             GraphicsDevice.SetVertexBuffer(_floorVertexBuffer);
             GraphicsDevice.Indices = _floorIndexBuffer;
 
             effect.ApplyRenderContext(_floorWorld, context);
+            effect.Technique = ShadedEffectTechniques.DrawShaded;
 
             effect.Parameters["Color"].SetValue(Color.Gray.ToVector4());
 
