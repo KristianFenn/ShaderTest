@@ -32,7 +32,13 @@ namespace ShaderTest.Shaders
             set => GetPropertyParameter().SetValue(value);
         }
 
-        public Color Color
+        public Color DiffuseColor
+        {
+            get => GetPropertyParameter().GetValueColor();
+            set => GetPropertyParameter().SetValue(value);
+        }
+
+        public Color SepcularColor
         {
             get => GetPropertyParameter().GetValueColor();
             set => GetPropertyParameter().SetValue(value);

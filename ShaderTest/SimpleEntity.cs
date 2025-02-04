@@ -9,13 +9,14 @@ using System.Threading.Tasks;
 
 namespace ShaderTest
 {
-    public class SimpleEntity(Model model, Matrix world, bool includeInShadowMap, Color color, Texture2D texture = null)
+    public class SimpleEntity(Model model, Matrix world, bool includeInShadowMap, Color diffuseColor, Color specularColor, Texture2D texture = null)
     {
         public Matrix World { get; set; } = world;
         public Model Model { get; set; } = model;
         public bool IncludeInShadowMap { get; init; } = includeInShadowMap;
-        public Color Color { get; set; } = color;
-        public Texture2D Texture { get; set; } = texture;
+        public Color DiffuseColor { get; } = diffuseColor;
+        public Color SpecularColor { get; } = specularColor;
+        public Texture2D Texture { get; } = texture;
 
         public void Draw(GraphicsDevice graphicsDevice, BaseEffect effect, RenderContext renderContext)
         {

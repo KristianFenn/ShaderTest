@@ -13,23 +13,26 @@ namespace ShaderTest
         private const float _floorSize = 20f;
 
         private GraphicsDeviceManager _graphics;
-        private SpriteBatch _spriteBatch;
         private ShadedEffect _shadedEffect;
         private ShadowMapEffect _shadowMapEffect;
         private SpriteFont _arial;
-        private VertexBuffer _floorVertexBuffer;
-        private IndexBuffer _floorIndexBuffer;
         private Vector3 _cameraPos;
+        private Vector3 _cameraDir;
         private Vector3 _lightPos;
+        private Vector3 _pointLightPos;
         private Matrix _view;
         private Matrix _projection;
         private Matrix _lightView;
         private Matrix _lightProjection;
         private Vector3 _lightRotateAxis;
+        private Matrix _pointLightView;
+        private Matrix _pointLightProjection;
         private Matrix _floorWorld;
 
         private RenderTarget2D _shadowMap;
+        private RenderTarget2D _cubeMap;
         private BasicEffect _lineEffect;
+        private float _lightRotateAmountPerSec;
         private KeyboardState _lastKb;
         private MouseState _lastMouse;
 
@@ -40,8 +43,8 @@ namespace ShaderTest
             _graphics = new(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
-            _graphics.PreferredBackBufferWidth = 1280;
-            _graphics.PreferredBackBufferHeight = 720;
+            _graphics.PreferredBackBufferWidth = 1920;
+            _graphics.PreferredBackBufferHeight = 1080;
             _graphics.PreferMultiSampling = true;
 
             _graphics.PreparingDeviceSettings += (object sender, PreparingDeviceSettingsEventArgs e) =>
@@ -57,11 +60,6 @@ namespace ShaderTest
 
         protected override void LoadContent()
         {
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            var sphere = Content.Load<Model>("UVSphere");
-            var teapot = Content.Load<Model>("Teapot");
-            var cabinet = Content.Load<Model>("Cabinet");
             _shadedEffect = new ShadedEffect(Content.Load<Effect>("Shaders/Test"));
             _shadowMapEffect = new ShadowMapEffect(Content.Load<Effect>("Shaders/Depth"));
             _arial = Content.Load<SpriteFont>("Arial");
@@ -69,63 +67,92 @@ namespace ShaderTest
             _shadedEffect.Technique = ShadedEffectTechniques.DrawShaded;
             _shadowMapEffect.CurrentTechnique = _shadowMapEffect.Techniques["RenderDepth"];
 
-            _floorVertexBuffer = new VertexBuffer(GraphicsDevice, typeof(VertexPositionColorNormal), 4, BufferUsage.WriteOnly);
-            _floorIndexBuffer = new IndexBuffer(GraphicsDevice, IndexElementSize.SixteenBits, 6, BufferUsage.WriteOnly);
-
-            _floorVertexBuffer.SetData([
-                new VertexPositionColorNormal(new Vector3(0, 0, 0), Color.Gray, Vector3.Up),
-                new VertexPositionColorNormal(new Vector3(1, 0, 0), Color.Gray, Vector3.Up),
-                new VertexPositionColorNormal(new Vector3(1, 0, 1), Color.Gray, Vector3.Up),
-                new VertexPositionColorNormal(new Vector3(0, 0, 1), Color.Gray, Vector3.Up),
-            ]);
-
-            _floorIndexBuffer.SetData<short>([
-                0, 1, 2,
-                0, 2, 3
-            ]);
-
-            var halfFloor = _floorSize / 2;
-
-            _entities = new List<SimpleEntity>();
-
-            _floorWorld = Matrix.CreateScale(_floorSize)
-                * Matrix.CreateTranslation(-halfFloor, -5f, -halfFloor);
+            _entities = [];
 
             _cameraPos = new Vector3(3);
+            _cameraDir = Vector3.Forward;
             _lightPos = new Vector3(10);
+            _pointLightPos = new Vector3(5);
 
             _view = Matrix.CreateLookAt(_cameraPos, Vector3.Zero, Vector3.Up);
-            _projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(60f), GraphicsDevice.Viewport.AspectRatio, 1f, 200f);
+            _projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(60f), GraphicsDevice.Viewport.AspectRatio, 0.1f, 200f);
 
             _lightView = Matrix.CreateLookAt(_lightPos, Vector3.Zero, Vector3.Up);
-            _lightProjection = Matrix.CreateOrthographic(32, 32, 0.1f, 200f);
+            _lightProjection = Matrix.CreateOrthographic(48, 48, 0.1f, 200f);
             _lightRotateAxis = Vector3.Normalize(Vector3.Cross(-_lightPos, Vector3.Up));
 
-            _shadowMap = new RenderTarget2D(GraphicsDevice, 2048, 2048, false, SurfaceFormat.Single, DepthFormat.None);
+            _pointLightView = Matrix.CreateLookAt(_pointLightPos, Vector3.Zero, Vector3.Up);
+            _pointLightProjection = Matrix.CreatePerspectiveFieldOfView(MathHelper.Pi, 1f, 1f, 200f);
+
+            _shadowMap = new RenderTarget2D(GraphicsDevice, 4096, 4096, false, SurfaceFormat.Single, DepthFormat.Depth24);
 
             _lineEffect = new BasicEffect(GraphicsDevice)
             {
                 VertexColorEnabled = true
             };
 
-            //InitialiseTeapot(teapot);
-            InitialiseCabinet(cabinet);
-            //InitialiseSpheres(sphere);
+            _lightRotateAmountPerSec = (MathHelper.TwoPi / 120f);
+
+            //InitialiseTeapot();
+            InitialiseGround();
+            InitialiseCampfire();
+            InitialiseTent();
+            InitialiseCar();
+            //InitialiseCabinet();
+            //InitialiseSpheres();
         }
 
-        private void InitialiseTeapot(Model teapotModel)
+        private Model LoadWithTexture(string path, out Texture2D texture)
         {
-            _entities.Add(new SimpleEntity(teapotModel, Matrix.CreateScale(2f) * Matrix.CreateTranslation(0f, -5f, 0f), true, Color.Cyan));
+            var model = Content.Load<Model>(path);
+            texture = Content.Load<Texture2D>($"{path}.Color");
+            return model;
         }
 
-        private void InitialiseCabinet(Model cabinetModel)
+        private void InitialiseGround()
         {
-            var effect = (BasicEffect)cabinetModel.Meshes[0].Effects[0];
-            _entities.Add(new SimpleEntity(cabinetModel, Matrix.CreateScale(2f) * Matrix.CreateTranslation(0f, -2f, 0f), true, Color.White, effect.Texture));
+            var model = LoadWithTexture("Models/Ground/Ground", out Texture2D texture);
+            _entities.Add(new SimpleEntity(model, Matrix.CreateScale(2f) * Matrix.CreateTranslation(3f, -2f, 0f), true, Color.White, Color.Black, texture));
         }
 
-        private void InitialiseSpheres(Model sphereModel)
+        private void InitialiseCar()
         {
+            var model = LoadWithTexture("Models/Car/Car", out Texture2D texture);
+            _entities.Add(new SimpleEntity(model, Matrix.CreateScale(0.4f) * Matrix.CreateFromAxisAngle(Vector3.Up, MathHelper.ToRadians(-20f)) * Matrix.CreateTranslation(5f, -2f, 0f), true, Color.White, Color.White, texture));
+        }
+
+        private void InitialiseTent()
+        {
+            var model = LoadWithTexture("Models/Tent/Tent", out Texture2D texture);
+            _entities.Add(new SimpleEntity(model, 
+                Matrix.CreateFromAxisAngle(Vector3.Up, MathHelper.ToRadians(120f))
+                * Matrix.CreateTranslation(3f, -2f, 4f), 
+                true, Color.White, new Color(0.5f, 0.5f, 0.5f), texture));
+        }
+
+        private void InitialiseCampfire()
+        {
+            var model = LoadWithTexture("Models/Campfire/Campfire", out Texture2D texture);
+            _entities.Add(new SimpleEntity(model, Matrix.CreateTranslation(0f, -2f, 0f), true, Color.White, Color.Black, texture));
+        }
+
+
+        private void InitialiseTeapot()
+        {
+            var teapotModel = Content.Load<Model>("Teapot");
+            _entities.Add(new SimpleEntity(teapotModel, Matrix.CreateScale(2f) * Matrix.CreateTranslation(0f, -5f, 0f), true, Color.Cyan, Color.White));
+        }
+
+        private void InitialiseCabinet()
+        {
+            var cabinetModel = LoadWithTexture("Ground", out Texture2D cabinetTexture);
+            _entities.Add(new SimpleEntity(cabinetModel, Matrix.CreateScale(2f) * Matrix.CreateTranslation(0f, -2f, 0f), true, Color.White, Color.White, cabinetTexture));
+        }
+
+        private void InitialiseSpheres()
+        {
+            var sphereModel = Content.Load<Model>("UVSphere");
+
             Matrix[] sphereWorld = [
                 Matrix.CreateTranslation( 0f,  0f,  0f) * Matrix.CreateRotationZ(1f),
                 Matrix.CreateTranslation( 2f,  0f,  2f),
@@ -144,7 +171,7 @@ namespace ShaderTest
 
             for (int i = 0; i < sphereWorld.Length; i++)
             {
-                _entities.Add(new SimpleEntity(sphereModel, sphereWorld[i], true, sphereColors[i]));
+                _entities.Add(new SimpleEntity(sphereModel, sphereWorld[i], true, sphereColors[i], Color.White));
             }
         }
 
@@ -156,53 +183,43 @@ namespace ShaderTest
             var currentKb = Keyboard.GetState();
             var currentMouse = Mouse.GetState();
 
-            if (currentKb.IsKeyDown(Keys.LeftAlt))
+            var moveScaled = (currentMouse.Position.ToVector2() - _lastMouse.Position.ToVector2()) * 0.005f;
+
+            var cameraLeft = Vector3.Normalize(Vector3.Cross(Vector3.Up, _cameraDir));
+
+            var rotate = Quaternion.CreateFromAxisAngle(Vector3.Up, -moveScaled.X)
+                * Quaternion.CreateFromAxisAngle(cameraLeft, moveScaled.Y);
+
+            _cameraDir = Vector3.Transform(_cameraDir, rotate);
+
+
+            if (currentKb.IsKeyDown(Keys.W))
             {
-                var moveScaled = (currentMouse.Position.ToVector2() - _lastMouse.Position.ToVector2()) * 0.01f;
-
-                var cameraLeft = Vector3.Normalize(Vector3.Cross(Vector3.Up, -_cameraPos));
-
-                var rotate = Quaternion.CreateFromAxisAngle(Vector3.Up, moveScaled.X)
-                    * Quaternion.CreateFromAxisAngle(cameraLeft, -moveScaled.Y);
-
-                _cameraPos = Vector3.Transform(_cameraPos, rotate);
+                _cameraPos += (_cameraDir * 0.1f);
             }
 
             if (currentKb.IsKeyDown(Keys.S))
             {
-                var posNormalised = Vector3.Normalize(_cameraPos);
-
-                _cameraPos += (posNormalised * 0.1f);
-            }
-
-            if (currentKb.IsKeyDown(Keys.W))
-            {
-                var posNormalised = Vector3.Normalize(_cameraPos);
-
-                _cameraPos -= (posNormalised * 0.1f);
+                _cameraPos -= (_cameraDir * 0.1f);
             }
 
             if (currentKb.IsKeyDown(Keys.A))
             {
-
-                var lightRotateAmount = -0.5f * (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-                var lightRotate = Quaternion.CreateFromAxisAngle(_lightRotateAxis, lightRotateAmount);
-
-                _lightPos = Vector3.Transform(_lightPos, lightRotate);
+                _cameraPos += (cameraLeft * 0.1f);
             }
 
             if (currentKb.IsKeyDown(Keys.D))
             {
-
-                var lightRotateAmount = 0.5f * (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-                var lightRotate = Quaternion.CreateFromAxisAngle(_lightRotateAxis, lightRotateAmount);
-
-                _lightPos = Vector3.Transform(_lightPos, lightRotate);
+                _cameraPos -= (cameraLeft * 0.1f);
             }
 
-            _view = Matrix.CreateLookAt(_cameraPos, Vector3.Zero, Vector3.Up);
+            var lightRotateAmount = _lightRotateAmountPerSec * (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            var lightRotate = Quaternion.CreateFromAxisAngle(_lightRotateAxis, lightRotateAmount);
+
+            _lightPos = Vector3.Transform(_lightPos, lightRotate);
+
+            _view = Matrix.CreateLookAt(_cameraPos, _cameraPos + _cameraDir, Vector3.Up);
             _lightView = Matrix.CreateLookAt(_lightPos, Vector3.Zero, Vector3.Up);
 
             _lastKb = currentKb;
@@ -230,15 +247,13 @@ namespace ShaderTest
             }
 
             GraphicsDevice.SetRenderTarget(null);
-            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
 
             GraphicsDevice.Clear(Color.Black);
 
-            DrawFloor(_shadedEffect, renderContext);
-
             foreach (var entity in _entities)
             {
-                _shadedEffect.Color = entity.Color;
+                _shadedEffect.DiffuseColor = entity.DiffuseColor;
                 _shadedEffect.Texture = entity.Texture;
 
                 if (_shadedEffect.Texture != null)
@@ -253,44 +268,7 @@ namespace ShaderTest
                 entity.Draw(GraphicsDevice, _shadedEffect, renderContext);
             }
 
-            _spriteBatch.Begin();
-
-            _spriteBatch.Draw(_shadowMap, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 0.1f, SpriteEffects.None, 1f);
-
-            _spriteBatch.End();
-
-            VertexPositionColor[] lightToOriginVertices = [
-                new VertexPositionColor(Vector3.Zero, Color.Yellow),
-                new VertexPositionColor(_lightPos, Color.Yellow),
-            ];
-
-            _lineEffect.View = _view;
-            _lineEffect.Projection = _projection;
-
-            foreach (var pass in _lineEffect.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-                GraphicsDevice.DrawUserPrimitives(PrimitiveType.LineList, lightToOriginVertices, 0, 1);
-            }
-
             base.Draw(gameTime);
-        }
-
-        private void DrawFloor(ShadedEffect effect, RenderContext context)
-        {
-            GraphicsDevice.SetVertexBuffer(_floorVertexBuffer);
-            GraphicsDevice.Indices = _floorIndexBuffer;
-
-            effect.ApplyRenderContext(_floorWorld, context);
-            effect.Technique = ShadedEffectTechniques.DrawShaded;
-
-            effect.Parameters["Color"].SetValue(Color.Gray.ToVector4());
-
-            foreach (var pass in effect.CurrentTechnique.Passes)
-            {
-                pass.Apply();
-                GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 2);
-            }
         }
     }
 }

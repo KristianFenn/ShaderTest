@@ -29,11 +29,4 @@ float4 PSDepthMap(V2PDepth input) : COLOR
     return float4(input.Depth, 0, 0, 1);
 }
 
-technique RenderDepth
-{
-    pass P0
-    {
-        VertexShader = compile VS_SHADERMODEL VSDepthMap();
-        PixelShader = compile PS_SHADERMODEL PSDepthMap();
-    }
-}
+TECHNIQUE(RenderDepth, VSDepthMap, PSDepthMap);
