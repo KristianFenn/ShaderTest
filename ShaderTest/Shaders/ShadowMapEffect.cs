@@ -16,7 +16,7 @@ namespace ShaderTest.Shaders
             set => GetPropertyParameter().SetValue(value);
         }
 
-        public override void ApplyRenderContext(Matrix world, RenderContext renderContext)
+        public override void ApplyRenderContext(Matrix world, RenderContext renderContext, Texture2D texture)
         {
             ModelToLight = world * renderContext.WorldToLight;
         }

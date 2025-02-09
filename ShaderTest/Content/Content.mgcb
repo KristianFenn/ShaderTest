@@ -120,6 +120,18 @@
 /processorParam:TextureFormat=Compressed
 /build:Models/Car/Car.fbx
 
+#begin Models/Car/Tyre.Color.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Models/Car/Tyre.Color.png
+
 #begin Models/Ground/Ground.Color.png
 /importer:TextureImporter
 /processor:TextureProcessor

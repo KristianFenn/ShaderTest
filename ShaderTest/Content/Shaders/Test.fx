@@ -8,7 +8,7 @@ float4x4 ModelToScreen;
 float3 LightPosition;
 
 float4 DiffuseColor;
-float3 SpecularColor;
+float4 SpecularColor;
 float SpecularPower;
 
 static const int ShadowSamples = 16;
@@ -77,17 +77,17 @@ float4 ApplyLightingModel(V2P input, float4 color)
     float3 normalVector = normalize(input.ViewNormal);
     
     // Ambient colour
-    float3 ambientColor = color.rgb * 0.1f;
+    float3 ambientColor = color.rgb * 0.2f;
     
     // diffuse color
-    float incidence = clamp(dot(normalVector, lightVector), 0.0f, 1.0f);
+    float incidence = max(dot(normalVector, lightVector), 0.0f);
     float3 diffuseColor = color.rgb * lightColor * incidence;
     
     // specular color
     float3 cameraDir = normalize(-input.ViewPosition.xyz);
-    float3 reflectVector = reflect(-lightVector, normalVector);
-    float specularStrength = clamp(dot(cameraDir, reflectVector), 0.0f, 1.0f);
-    float3 specularColor = lightColor * SpecularColor * pow(specularStrength, 7);
+    float3 halfVector = normalize(cameraDir + lightVector);
+    float specularStrength = max(dot(normalVector, halfVector), 0.0f);
+    float3 specularColor = lightColor * SpecularColor.rgb * pow(specularStrength, 500);
     
     // shadow map
     float shadowScalar = 1.0f;
@@ -96,7 +96,7 @@ float4 ApplyLightingModel(V2P input, float4 color)
     {
         float4 seed = float4(i, input.ViewPosition.xyz);
         
-        float2 samplePosition = input.SMPosition + (randomOffset(seed) / 500.0f);
+        float2 samplePosition = input.SMPosition + (randomOffset(seed) / 700.0f);
         
         float sampledDepth = ShadowMap.Sample(ShadowMapSampler, samplePosition);
         if (sampledDepth <= input.SMDepth)

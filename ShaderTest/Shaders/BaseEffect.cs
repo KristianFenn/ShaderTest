@@ -16,6 +16,6 @@ namespace ShaderTest.Shaders
             return Parameters[propertyName];
         }
 
-        public abstract void ApplyRenderContext(Matrix world, RenderContext renderContext);
+        public abstract void ApplyRenderContext(Matrix world, RenderContext renderContext, Texture2D texture);
     }
 }

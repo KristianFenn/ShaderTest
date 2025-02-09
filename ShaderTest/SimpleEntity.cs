@@ -9,14 +9,15 @@ using System.Threading.Tasks;
 
 namespace ShaderTest
 {
-    public class SimpleEntity(Model model, Matrix world, bool includeInShadowMap, Color diffuseColor, Color specularColor, Texture2D texture = null)
+    public class SimpleEntity(Model model, Matrix world, bool includeInShadowMap, Color diffuseColor, float specularPower, Color? specularColor = null)
     {
         public Matrix World { get; set; } = world;
         public Model Model { get; set; } = model;
         public bool IncludeInShadowMap { get; init; } = includeInShadowMap;
         public Color DiffuseColor { get; } = diffuseColor;
-        public Color SpecularColor { get; } = specularColor;
-        public Texture2D Texture { get; } = texture;
+        public Color SpecularColor { get; } = specularColor ?? Color.White;
+        public float SpecularPower { get; } = specularPower;
+        public Dictionary<string, Texture2D> Textures { get; } = [];
 
         public void Draw(GraphicsDevice graphicsDevice, BaseEffect effect, RenderContext renderContext)
         {
@@ -25,9 +26,12 @@ namespace ShaderTest
             for (int boneIdx = 0; boneIdx < Model.Bones.Count; boneIdx++)
             {
                 ModelBone bone = Model.Bones[boneIdx];
+
+                Textures.TryGetValue(bone.Name, out Texture2D texture);
+
                 var parentTransform = bone.Parent != null ? boneMatrices[bone.Parent.Index] : World;
                 boneMatrices[boneIdx] = bone.Transform * parentTransform;
-                effect.ApplyRenderContext(boneMatrices[boneIdx], renderContext);
+                effect.ApplyRenderContext(boneMatrices[boneIdx], renderContext, texture);
 
                 foreach (ModelMeshPart mesh in bone.Meshes.SelectMany(m => m.MeshParts))
                 {

@@ -38,9 +38,15 @@ namespace ShaderTest.Shaders
             set => GetPropertyParameter().SetValue(value);
         }
 
-        public Color SepcularColor
+        public Color SpecularColor
         {
             get => GetPropertyParameter().GetValueColor();
+            set => GetPropertyParameter().SetValue(value);
+        }
+
+        public float SpecularPower
+        {
+            get => GetPropertyParameter().GetValueSingle();
             set => GetPropertyParameter().SetValue(value);
         }
 
@@ -74,7 +80,7 @@ namespace ShaderTest.Shaders
             }
         }
 
-        public override void ApplyRenderContext(Matrix world, RenderContext renderContext)
+        public override void ApplyRenderContext(Matrix world, RenderContext renderContext, Texture2D texture)
         {
             ModelToLight = world * renderContext.WorldToLight;
             ModelToView = world * renderContext.View;
@@ -82,6 +88,16 @@ namespace ShaderTest.Shaders
             ModelToScreen = ModelToView * renderContext.Projection;
             LightPosition = renderContext.LightPosition;
             ShadowMap = renderContext.ShadowMap;
+            Texture = texture;
+
+            if (texture != null)
+            {
+                Technique = ShadedEffectTechniques.DrawTextured;
+            }
+            else
+            {
+                Technique = ShadedEffectTechniques.DrawShaded;
+            }
         }
     }
 }
