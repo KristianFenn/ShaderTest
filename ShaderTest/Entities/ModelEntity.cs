@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using ShaderTest.Shaders;
 using System;
@@ -7,17 +8,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ShaderTest
+namespace ShaderTest.Entities
 {
-    public class SimpleEntity(Model model, Matrix world, bool includeInShadowMap, Color diffuseColor, float specularPower, Color? specularColor = null)
+    public abstract class ModelEntity
     {
-        public Matrix World { get; set; } = world;
-        public Model Model { get; set; } = model;
-        public bool IncludeInShadowMap { get; init; } = includeInShadowMap;
-        public Color DiffuseColor { get; } = diffuseColor;
-        public Color SpecularColor { get; } = specularColor ?? Color.White;
-        public float SpecularPower { get; } = specularPower;
-        public Dictionary<string, Texture2D> Textures { get; } = [];
+        public Matrix World { get; protected set; }
+        public Model Model { get; protected set; }
+        public abstract bool IncludeInShadowMap { get; }
+
+        protected Dictionary<string, EffectParameters> BoneParameters = [];
+
+        public ModelEntity(ContentManager content)
+        {
+            LoadContent(content);
+        }
+
+        protected abstract void LoadContent(ContentManager content);
 
         public void Draw(GraphicsDevice graphicsDevice, BaseEffect effect, RenderContext renderContext)
         {
@@ -27,11 +33,15 @@ namespace ShaderTest
             {
                 ModelBone bone = Model.Bones[boneIdx];
 
-                Textures.TryGetValue(bone.Name, out Texture2D texture);
-
                 var parentTransform = bone.Parent != null ? boneMatrices[bone.Parent.Index] : World;
                 boneMatrices[boneIdx] = bone.Transform * parentTransform;
-                effect.ApplyRenderContext(boneMatrices[boneIdx], renderContext, texture);
+
+                if (!BoneParameters.TryGetValue(bone.Name, out var parameters))
+                {
+                    parameters = BoneParameters["Default"];
+                }
+
+                effect.ApplyRenderContext(boneMatrices[boneIdx], renderContext, parameters);
 
                 foreach (ModelMeshPart mesh in bone.Meshes.SelectMany(m => m.MeshParts))
                 {

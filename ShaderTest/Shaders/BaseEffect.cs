@@ -11,11 +11,6 @@ namespace ShaderTest.Shaders
 {
     public abstract class BaseEffect(Effect cloneSource) : Effect(cloneSource)
     {
-        public EffectParameter GetPropertyParameter([CallerMemberName] string propertyName = null)
-        {
-            return Parameters[propertyName];
-        }
-
-        public abstract void ApplyRenderContext(Matrix world, RenderContext renderContext, Texture2D texture);
+        public abstract void ApplyRenderContext(Matrix world, RenderContext renderContext, EffectParameters effectParameters);
     }
 }

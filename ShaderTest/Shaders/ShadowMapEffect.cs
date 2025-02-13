@@ -10,15 +10,9 @@ namespace ShaderTest.Shaders
 {
     public class ShadowMapEffect(Effect cloneSource) : BaseEffect(cloneSource)
     {
-        public Matrix ModelToLight
+        public override void ApplyRenderContext(Matrix world, RenderContext renderContext, EffectParameters effectParameters)
         {
-            get => GetPropertyParameter().GetValueMatrix();
-            set => GetPropertyParameter().SetValue(value);
-        }
-
-        public override void ApplyRenderContext(Matrix world, RenderContext renderContext, Texture2D texture)
-        {
-            ModelToLight = world * renderContext.WorldToLight;
+            Parameters["ModelToLight"].SetValue(world * renderContext.WorldToLight);
         }
     }
 }
