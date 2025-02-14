@@ -5,7 +5,6 @@ float4x4 ModelToLight;
 struct VSInputDepth
 {
     float4 Position : POSITION0;
-    float4 Normal : NORMAL0;
 };
 
 struct V2PDepth

@@ -1,3 +1,3 @@
 ﻿
-using var game = new ShaderTest.Game1();
+using var game = new ShaderTest.ShaderTestGame();
 game.Run();

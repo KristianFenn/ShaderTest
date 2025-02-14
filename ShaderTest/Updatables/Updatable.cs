@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace ShaderTest.Updatables
 {
-    public abstract class Updatable(Game game)
+    public abstract class Updatable(ShaderTestGame game)
     {
-        protected Game Game => game;
+        protected ShaderTestGame Game => game;
         public abstract void Update(GameTime gameTime);
     }
 }

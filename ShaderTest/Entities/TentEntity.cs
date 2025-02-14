@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ShaderTest.Entities
 {
-    public class TentEntity(ContentManager content) : ModelEntity(content)
+    public class TentEntity(ContentManager content, string name) : ModelEntity(content, name)
     {
         public override bool IncludeInShadowMap => true;
 

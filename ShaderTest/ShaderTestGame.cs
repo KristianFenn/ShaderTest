@@ -1,6 +1,8 @@
-﻿using Microsoft.Xna.Framework;
+﻿using ImGuiNET;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.ImGuiNet;
 using ShaderTest.Entities;
 using ShaderTest.Shaders;
 using ShaderTest.Updatables;
@@ -10,8 +12,12 @@ using System.Linq;
 
 namespace ShaderTest
 {
-    public class Game1 : Game
+    public class ShaderTestGame : Game
     {
+        public Camera Camera { get; private set; }
+        public MouseInputHandler Mouse { get; private set; }
+        public List<ModelEntity> Entities { get; private set; }
+
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         private ShadedEffect _shadedEffect;
@@ -19,14 +25,14 @@ namespace ShaderTest
         private SpriteFont _arial;
 
         private RenderTarget2D _shadowMap;
-
-        private List<ModelEntity> _entities;
+        private Texture2D _pixel;
         private GameStats _stats;
         private Sun _sun;
         private List<Updatable> _updatable;
-        private Camera _camera;
+        private List<IHasUi> _ui;
+        private static ImGuiRenderer _imgui;
 
-        public Game1()
+        public ShaderTestGame()
         {
             _graphics = new(this);
             Content.RootDirectory = "Content";
@@ -49,33 +55,51 @@ namespace ShaderTest
 
         protected override void Initialize()
         {
-            base.Initialize();
+            _imgui = new ImGuiRenderer(this);
             _stats = new GameStats(GraphicsDevice);
+
+            base.Initialize();
         }
 
         protected override void LoadContent()
         {
+            Entities = [];
+            _updatable = [];
+            _ui = [];
+
+            _imgui.RebuildFontAtlas();
+
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _shadedEffect = new ShadedEffect(Content.Load<Effect>("Shaders/Test"));
             _shadowMapEffect = new ShadowMapEffect(Content.Load<Effect>("Shaders/Depth"));
             _arial = Content.Load<SpriteFont>("Arial");
             _shadowMapEffect.CurrentTechnique = _shadowMapEffect.Techniques["RenderDepth"];
 
-            _entities = [];
-            _updatable = [];
+            _ui.Add(_shadedEffect);
 
             _shadowMap = new RenderTarget2D(GraphicsDevice, 4096, 4096, false, SurfaceFormat.Single, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents);
 
-            _entities.Add(new GroundEntity(Content));
-            _entities.Add(new CampfireEntity(Content));
-            _entities.Add(new CarEntity(Content));
-            _entities.Add(new TentEntity(Content));
+            Entities.Add(new GroundEntity(Content, "Ground"));
+            Entities.Add(new CampfireEntity(Content, "Campfire"));
+            Entities.Add(new CarEntity(Content, "Car"));
+            Entities.Add(new TentEntity(Content, "Tent"));
 
             _sun = new Sun(this);
             _updatable.Add(_sun);
+            _ui.Add(_sun);
 
-            _camera = new Camera(this);
-            _updatable.Add(_camera);
+            Camera = new Camera(this);
+            _updatable.Add(Camera);
+
+            Mouse = new MouseInputHandler(this);
+            _updatable.Add(Mouse);
+
+            _pixel = new Texture2D(GraphicsDevice, 1, 1);
+            _pixel.SetData([Color.White]);
+
+            var editor = new EntityEdit(this);
+            _updatable.Add(editor);
+            _ui.Add(editor);
         }
 
         protected override void Update(GameTime gameTime)
@@ -86,6 +110,11 @@ namespace ShaderTest
             foreach (var updateable in _updatable)
             {
                 updateable.Update(gameTime);
+            }
+
+            foreach (var entity in Entities)
+            {
+                entity.Update(gameTime);
             }
 
             _stats.Update(gameTime);
@@ -102,9 +131,9 @@ namespace ShaderTest
             GraphicsDevice.SetRenderTarget(_shadowMap);
             GraphicsDevice.Clear(Color.White);
 
-            var renderContext = new RenderContext(_camera.View, _camera.Projection, _sun.View, _sun.Projection, _sun.Position, _shadowMap);
+            var renderContext = new RenderContext(Camera.View, Camera.Projection, _sun.View, _sun.Projection, _sun.Position, _shadowMap);
 
-            foreach (var entity in _entities)
+            foreach (var entity in Entities)
             {
                 if (!entity.IncludeInShadowMap) continue;
 
@@ -116,14 +145,24 @@ namespace ShaderTest
 
             GraphicsDevice.Clear(Color.Black);
 
-            foreach (var entity in _entities)
+            foreach (var entity in Entities)
             {
                 entity.Draw(GraphicsDevice, _shadedEffect, renderContext);
             }
 
             _spriteBatch.Begin();
             _stats.Draw(gameTime, _spriteBatch, GraphicsDevice, _arial);
+
             _spriteBatch.End();
+
+            _imgui.BeginLayout(gameTime);
+
+            foreach (var ui in _ui)
+            {
+                ui.RenderUi();
+            }
+
+            _imgui.EndLayout();
 
             base.Draw(gameTime);
         }

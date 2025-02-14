@@ -12,18 +12,25 @@ namespace ShaderTest.Entities
 {
     public abstract class ModelEntity
     {
+        public string Name { get; init; }
         public Matrix World { get; protected set; }
         public Model Model { get; protected set; }
+        public Dictionary<string, EffectParameters> BoneParameters { get; protected set; } = [];
         public abstract bool IncludeInShadowMap { get; }
 
-        protected Dictionary<string, EffectParameters> BoneParameters = [];
 
-        public ModelEntity(ContentManager content)
+        public ModelEntity(ContentManager content, string name)
         {
             LoadContent(content);
+            Name = name;
         }
 
         protected abstract void LoadContent(ContentManager content);
+
+        public virtual void Update(GameTime gameTime)
+        {
+
+        }
 
         public void Draw(GraphicsDevice graphicsDevice, BaseEffect effect, RenderContext renderContext)
         {

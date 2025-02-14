@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace ShaderTest.Entities
 {
-    public class GroundEntity(ContentManager content) : ModelEntity(content)
+    public class GroundEntity(ContentManager content, string name) : ModelEntity(content, name)
     {
         public override bool IncludeInShadowMap => true;
 
