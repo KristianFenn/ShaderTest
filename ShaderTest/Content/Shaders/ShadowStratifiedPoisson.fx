@@ -37,7 +37,7 @@ bool IsInShadow(float4 worldPosition, float4 shadowMapPosition, int iteration)
     int index = int(16.0 * random(floor(worldPosition.xyz * 1000.0f), iteration) % 16);
     
     float2 samplePosition = shadowMapPosition.xy + (poissonDisk[index] / SampleOffsetScalar);
-    float sampledDepth = ShadowMap.Sample(ClampedSampler, samplePosition);
+    float sampledDepth = ShadowMap.Sample(ShadowMapSampler, samplePosition);
     
     return sampledDepth < shadowMapPosition.z;
 }
@@ -77,5 +77,3 @@ float CalculateShadowScalar(float4 worldPosition, float4 shadowMapPosition, out 
     
     return shadowScalar;
 }
-
-DT(shadow);

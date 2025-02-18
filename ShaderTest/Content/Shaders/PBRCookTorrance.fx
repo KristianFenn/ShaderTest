@@ -1,4 +1,4 @@
-#include "NoisePcfShadow.fx"
+#include "ShadowNoisePcf.fx"
 
 float4x4 ModelToWorld;
 float4x4 ModelToShadowMap;
@@ -8,15 +8,6 @@ float4x4 ModelToScreen;
 
 float3 LightPosition;
 float3 LightColor;
-
-float Metallic;
-float Roughness;
-float AmbientOcclusion;
-
-Texture2D<float4> Texture;
-Texture2D<float4> RmaMap;
-Texture2D<float4> NormalMap;
-
 
 struct VSInput
 {
@@ -54,8 +45,8 @@ V2P VShader(VSInput input)
     output.TextureCoords = input.TextureCoords;
     
     output.TBN = float3x3(
-        normalize(mul(input.Tangent, ModelToViewNormal)), 
-        normalize(mul(input.Binormal, ModelToViewNormal)), 
+        normalize(mul(input.Tangent, ModelToViewNormal)),
+        normalize(mul(input.Binormal, ModelToViewNormal)),
         normalize(mul(input.Normal, ModelToViewNormal))
     );
     
@@ -64,7 +55,7 @@ V2P VShader(VSInput input)
 
 float3 fresnelSchlick(float incidence, float3 f0)
 {
-    return f0 + (1.0 - f0) * pow(1.0 - incidence, 5.0f);
+    return f0 + (1.0 - f0) * pow(max(1.0 - incidence, 0.0f), 5.0f);
 }
 
 float distributionGGX(float3 normal, float3 halfVector, float roughness)
@@ -139,61 +130,7 @@ float4 ApplyLightingModel(V2P input, float3 albedo, float roughness, float metal
     
     pixelColor = pixelColor / (pixelColor + float3(1.0f, 1.0f, 1.0f));
     float gammaCorrectionFactor = 1.0f / 2.2f;
-    pixelColor = pow(pixelColor, float3(gammaCorrectionFactor, gammaCorrectionFactor, gammaCorrectionFactor));
+    pixelColor = pow(abs(pixelColor), float3(gammaCorrectionFactor, gammaCorrectionFactor, gammaCorrectionFactor));
     
     return float4(pixelColor, 1.0f);
 }
-
-float4 PShaderTextureColorConstants(V2P input) : COLOR
-{
-    float4 color = Texture.Sample(TextureSampler, input.TextureCoords);
-    
-    float3 albedo = pow(color.rgb, 2.2f);
-    
-    return ApplyLightingModel(input, albedo, Roughness, Metallic, AmbientOcclusion, input.ViewNormal);
-
-}
-
-float4 PShaderTextureColorRmaMap(V2P input) : COLOR
-{
-    float4 color = Texture.Sample(TextureSampler, input.TextureCoords);
-    float4 rma = RmaMap.Sample(ClampedSampler, input.TextureCoords);
-    
-    float3 albedo = pow(color.rgb, 2.2f);
-    
-    return ApplyLightingModel(input, albedo, rma.r, rma.g, rma.b, input.ViewNormal);
-}
-
-float4 PShaderTextureColorRmaNormalMaps(V2P input) : COLOR
-{
-    float4 color = Texture.Sample(TextureSampler, input.TextureCoords);
-    float4 rma = RmaMap.Sample(ClampedSampler, input.TextureCoords);
-    
-    float3 normalSample = mad(NormalMap.Sample(LinearSampler, input.TextureCoords), 2.0f, -1.0f);
-    float3 normal = normalize(mul(normalSample, input.TBN));
-    
-    float3 albedo = pow(color.rgb, 2.2f);
-    
-    return ApplyLightingModel(input, albedo, rma.r, rma.g, rma.b, normal);
-}
-
-float4 PShaderDrawNormals(V2P input) : COLOR
-{
-    float3 normal = normalize(input.ViewNormal);
-    
-    return float4(normal, 1.0f);
-}
-
-float4 PShaderDrawMapNormals(V2P input) : COLOR
-{
-    float3 normalSample = mad(NormalMap.Sample(LinearSampler, input.TextureCoords), 2.0f, -1.0f);
-    float3 normal = normalize(mul(normalSample, input.TBN));
-    
-    return float4(normal, 1.0f);
-}
-
-TECHNIQUE(DrawTextured, VShader, PShaderTextureColorConstants);
-TECHNIQUE(DrawTexturedRma, VShader, PShaderTextureColorRmaMap);
-TECHNIQUE(DrawTexturedRmaNormal, VShader, PShaderTextureColorRmaNormalMaps);
-TECHNIQUE(DrawNormals, VShader, PShaderDrawNormals);
-TECHNIQUE(DrawMapNormals, VShader, PShaderDrawMapNormals);

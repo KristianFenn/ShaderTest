@@ -19,8 +19,10 @@
 static const float Pi = 3.14159265f;
 
 Texture2D<float> ShadowMap;
-SamplerState TextureSampler : register(s0);
-SamplerState ClampedSampler : register(s1);
-SamplerState LinearSampler : register(s2);
+SamplerState ShadowMapSampler = sampler_state
+{
+    Texture = (ShadowMap);
+    Filter = None;
+};
 
 DT(common);

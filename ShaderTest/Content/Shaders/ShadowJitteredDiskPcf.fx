@@ -9,11 +9,7 @@ Texture3D<float4> JitterMap;
 SamplerState JitterSampler = sampler_state
 {
     Texture = (JitterMap);
-    MinFilter = point;
-    MagFilter = point;
-    MipFilter = point;
-    AddressU = Wrap;
-    AddressV = Wrap;
+    Filter = None;
 };
 
 float CalculateShadowScalar(float2 screenPosition, float4 shadowMapPosition, out bool highSample)
@@ -28,11 +24,11 @@ float CalculateShadowScalar(float2 screenPosition, float4 shadowMapPosition, out
         offsets -= float4(0.5f, 0.5f, 0.5f, 0.5f);
         
         inShadowSamples +=
-                ShadowMap.Sample(ClampedSampler, shadowMapPosition.xy + (offsets.rg / SampleRadiusScalar)) < shadowMapPosition.z
+                ShadowMap.Sample(ShadowMapSampler, shadowMapPosition.xy + (offsets.rg / SampleRadiusScalar)) < shadowMapPosition.z
                 ? 1.0f : 0.0f;
         
         inShadowSamples +=
-                ShadowMap.Sample(ClampedSampler, shadowMapPosition.xy + (offsets.ba / SampleRadiusScalar)) < shadowMapPosition.z
+                ShadowMap.Sample(ShadowMapSampler, shadowMapPosition.xy + (offsets.ba / SampleRadiusScalar)) < shadowMapPosition.z
                 ? 1.0f : 0.0f;
     }
     
@@ -48,11 +44,11 @@ float CalculateShadowScalar(float2 screenPosition, float4 shadowMapPosition, out
             offsets -= float4(0.5f, 0.5f, 0.5f, 0.5f);
         
             inShadowSamples +=
-                ShadowMap.Sample(ClampedSampler, shadowMapPosition.xy + (offsets.xy / SampleRadiusScalar)) < shadowMapPosition.z
+                ShadowMap.Sample(ShadowMapSampler, shadowMapPosition.xy + (offsets.xy / SampleRadiusScalar)) < shadowMapPosition.z
                 ? 1.0f : 0.0f;
         
             inShadowSamples +=
-                ShadowMap.Sample(ClampedSampler, shadowMapPosition.xy + (offsets.zw / SampleRadiusScalar)) < shadowMapPosition.z
+                ShadowMap.Sample(ShadowMapSampler, shadowMapPosition.xy + (offsets.zw / SampleRadiusScalar)) < shadowMapPosition.z
                 ? 1.0f : 0.0f;
         }
         
@@ -62,5 +58,3 @@ float CalculateShadowScalar(float2 screenPosition, float4 shadowMapPosition, out
     
     return shadowScalar;
 }
-
-DT(shadow);

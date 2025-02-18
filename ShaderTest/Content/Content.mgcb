@@ -5,14 +5,23 @@
 /profile:Reach
 /compress:false
 
-#begin Shaders\AdjacentPcfShadow.fx
+#begin Shaders\BlinnPhong.fx
 /importer:EffectImporter
 /processor:EffectProcessor
 /processorParam:Importer=EffectImporter
 /processorParam:Processor=EffectProcessor
 /processorParam:DebugMode=Auto
 /processorParam:Defines=
-/build:Shaders\AdjacentPcfShadow.fx
+/build:Shaders\BlinnPhong.fx
+
+#begin Shaders\BlinnPhongTechniques.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:Importer=EffectImporter
+/processorParam:Processor=EffectProcessor
+/processorParam:DebugMode=Auto
+/processorParam:Defines=
+/build:Shaders\BlinnPhongTechniques.fx
 
 #begin Shaders\Common.fx
 /importer:EffectImporter
@@ -32,86 +41,59 @@
 /processorParam:Defines=
 /build:Shaders\Depth.fx
 
-#begin Shaders\JitteredDiskPcfShadow.fx
+#begin Shaders\PBRCookTorrance.fx
 /importer:EffectImporter
 /processor:EffectProcessor
 /processorParam:Importer=EffectImporter
 /processorParam:Processor=EffectProcessor
 /processorParam:DebugMode=Auto
 /processorParam:Defines=
-/build:Shaders\JitteredDiskPcfShadow.fx
+/build:Shaders\PBRCookTorrance.fx
 
-#begin Shaders\NoisePcfShadow.fx
+#begin Shaders\PBRTechniques.fx
 /importer:EffectImporter
 /processor:EffectProcessor
 /processorParam:Importer=EffectImporter
 /processorParam:Processor=EffectProcessor
 /processorParam:DebugMode=Auto
 /processorParam:Defines=
-/build:Shaders\NoisePcfShadow.fx
+/build:Shaders\PBRTechniques.fx
 
-#begin Shaders\PBRTest.fx
+#begin Shaders\ShadowAdjacentPcf.fx
 /importer:EffectImporter
 /processor:EffectProcessor
 /processorParam:Importer=EffectImporter
 /processorParam:Processor=EffectProcessor
 /processorParam:DebugMode=Auto
 /processorParam:Defines=
-/build:Shaders\PBRTest.fx
+/build:Shaders\ShadowAdjacentPcf.fx
 
-#begin Shaders\StratifiedPoissonShadow.fx
+#begin Shaders\ShadowJitteredDiskPcf.fx
 /importer:EffectImporter
 /processor:EffectProcessor
 /processorParam:Importer=EffectImporter
 /processorParam:Processor=EffectProcessor
 /processorParam:DebugMode=Auto
 /processorParam:Defines=
-/build:Shaders\StratifiedPoissonShadow.fx
+/build:Shaders\ShadowJitteredDiskPcf.fx
 
-#begin Shaders\Test.fx
+#begin Shaders\ShadowNoisePcf.fx
 /importer:EffectImporter
 /processor:EffectProcessor
 /processorParam:Importer=EffectImporter
 /processorParam:Processor=EffectProcessor
 /processorParam:DebugMode=Auto
 /processorParam:Defines=
-/build:Shaders\Test.fx
+/build:Shaders\ShadowNoisePcf.fx
 
-#begin Cabinet.fbx
-/importer:FbxImporter
-/processor:ModelProcessor
-/processorParam:ColorKeyColor=255,255,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=True
-/processorParam:GenerateTangentFrames=true
-/processorParam:PremultiplyTextureAlpha=True
-/processorParam:PremultiplyVertexColors=True
-/processorParam:ResizeTexturesToPowerOfTwo=False
-/processorParam:RotationX=-90
-/processorParam:RotationY=0
-/processorParam:RotationZ=0
-/processorParam:Scale=1
-/processorParam:SwapWindingOrder=False
-/processorParam:TextureFormat=Compressed
-/build:Cabinet.fbx
-
-#begin IcoSphere.fbx
-/importer:FbxImporter
-/processor:ModelProcessor
-/processorParam:ColorKeyColor=255,255,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=True
-/processorParam:GenerateTangentFrames=true
-/processorParam:PremultiplyTextureAlpha=True
-/processorParam:PremultiplyVertexColors=True
-/processorParam:ResizeTexturesToPowerOfTwo=False
-/processorParam:RotationX=-90
-/processorParam:RotationY=0
-/processorParam:RotationZ=0
-/processorParam:Scale=1
-/processorParam:SwapWindingOrder=False
-/processorParam:TextureFormat=Compressed
-/build:IcoSphere.fbx
+#begin Shaders\ShadowStratifiedPoisson.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:Importer=EffectImporter
+/processorParam:Processor=EffectProcessor
+/processorParam:DebugMode=Auto
+/processorParam:Defines=
+/build:Shaders\ShadowStratifiedPoisson.fx
 
 #begin Models\Campfire\Campfire.fbx
 /importer:FbxImporter
@@ -202,36 +184,6 @@
 /processorParam:SwapWindingOrder=False
 /processorParam:TextureFormat=Compressed
 /build:teapot.fbx
-
-#begin UVSphere.fbx
-/importer:FbxImporter
-/processor:ModelProcessor
-/processorParam:ColorKeyColor=255,255,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=True
-/processorParam:GenerateTangentFrames=true
-/processorParam:PremultiplyTextureAlpha=True
-/processorParam:PremultiplyVertexColors=True
-/processorParam:ResizeTexturesToPowerOfTwo=False
-/processorParam:RotationX=-90
-/processorParam:RotationY=0
-/processorParam:RotationZ=0
-/processorParam:Scale=1
-/processorParam:SwapWindingOrder=False
-/processorParam:TextureFormat=Compressed
-/build:UVSphere.fbx
-
-#begin Cabinet.fbm\Cabinet.001.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=false
-/processorParam:GenerateMipmaps=false
-/processorParam:PremultiplyAlpha=false
-/processorParam:ResizeToPowerOfTwo=false
-/processorParam:MakeSquare=false
-/processorParam:TextureFormat=color
-/build:Cabinet.fbm\Cabinet.001.png
 
 #begin Models\Campfire\Campfire.Color.png
 /importer:TextureImporter

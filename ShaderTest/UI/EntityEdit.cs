@@ -1,24 +1,18 @@
 ﻿using ImGuiNET;
 using Microsoft.Xna.Framework;
 using ShaderTest.Entities;
+using ShaderTest.Shaders;
+using ShaderTest.Updatables;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ShaderTest.Updatables
+namespace ShaderTest.UI
 {
     public class EntityEdit(ShaderTestGame game) : Updatable(game), IHasUi
     {
-        private readonly string[] Techniques = [
-            "DrawTextured",
-            "DrawTexturedRma",
-            "DrawTexturedRmaNormal",
-            "DrawNormals",
-            "DrawMapNormals"
-        ];
-
         private ModelEntity _selectedEntity = null;
         private string _selectedBone = "";
 
@@ -47,7 +41,7 @@ namespace ShaderTest.Updatables
             {
                 if (ImGui.BeginCombo("Bone", _selectedBone))
                 {
-                    foreach (var (name, _) in _selectedEntity.BoneParameters)
+                    foreach (var (name, _) in _selectedEntity.BoneShaders)
                     {
                         if (ImGui.Selectable(name, _selectedBone == name))
                         {
@@ -57,23 +51,37 @@ namespace ShaderTest.Updatables
                     ImGui.EndCombo();
                 }
 
-                var selectedBone = _selectedEntity.BoneParameters[_selectedBone];
+                var selectedBone = _selectedEntity.BoneShaders[_selectedBone];
+                var selectedShader = selectedBone.CurrentShader;
 
-                if (ImGui.BeginCombo("Technique", selectedBone.Technique))
+                if (ImGui.BeginCombo("Shader", selectedShader.GetType().Name))
                 {
-                    foreach (var name in Techniques)
+                    foreach (var shader in selectedBone.ConfiguredShaders)
                     {
-                        if (ImGui.Selectable(name, selectedBone.Technique == name))
+                        if (ImGui.Selectable(shader.GetType().Name, selectedShader == shader))
                         {
-                            selectedBone.Technique = name;
+                            selectedBone.CurrentShader = shader;
+                            selectedShader = shader;
                         }
                     }
                     ImGui.EndCombo();
                 }
 
-                ImGui.SliderFloat("Metallic", ref selectedBone.Metallic, 0.0f, 1.0f);
-                ImGui.SliderFloat("Roughness", ref selectedBone.Roughness, 0.0f, 1.0f);
-                ImGui.SliderFloat("AmbientOcclusion", ref selectedBone.AmbientOcclusion, 0.0f, 1.0f);
+                var currentTechnique = selectedShader.CurrentTechnique;
+
+                if (ImGui.BeginCombo("Technique", currentTechnique.Name))
+                {
+                    foreach (var technique in selectedShader.Techniques)
+                    {
+                        if (technique.Name == "common") continue;
+
+                        if (ImGui.Selectable(technique.Name, currentTechnique == technique))
+                        {
+                            selectedBone.CurrentShader.CurrentTechnique = technique;
+                        }
+                    }
+                    ImGui.EndCombo();
+                }
             }
 
             ImGui.End();

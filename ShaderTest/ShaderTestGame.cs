@@ -1,14 +1,12 @@
-﻿using ImGuiNET;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.ImGuiNet;
 using ShaderTest.Entities;
 using ShaderTest.Shaders;
+using ShaderTest.UI;
 using ShaderTest.Updatables;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ShaderTest
 {
@@ -20,9 +18,6 @@ namespace ShaderTest
 
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
-        private ShadedEffect _shadedEffect;
-        private ShadowMapEffect _shadowMapEffect;
-        private PbrEffect _pbrEffect;
         private SpriteFont _arial;
 
         private RenderTarget2D _shadowMap;
@@ -38,9 +33,9 @@ namespace ShaderTest
             _graphics = new(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
-            _graphics.PreferredBackBufferWidth = 2560;
-            _graphics.PreferredBackBufferHeight = 1440;
-            _graphics.IsFullScreen = true;
+            _graphics.PreferredBackBufferWidth = 1920;
+            _graphics.PreferredBackBufferHeight = 1080;
+            _graphics.IsFullScreen = false;
             _graphics.HardwareModeSwitch = false;
             _graphics.PreferMultiSampling = true;
             _graphics.SynchronizeWithVerticalRetrace = true;
@@ -95,20 +90,18 @@ namespace ShaderTest
             _imgui.RebuildFontAtlas();
 
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            _shadedEffect = new ShadedEffect(Content.Load<Effect>("Shaders/Test"));
-            _shadowMapEffect = new ShadowMapEffect(Content.Load<Effect>("Shaders/Depth"));
-            _pbrEffect = new PbrEffect(Content.Load<Effect>("Shaders/PBRTest"));
+
+            GameShaders.Initialise(Content);
+
             _arial = Content.Load<SpriteFont>("Arial");
-            _shadowMapEffect.CurrentTechnique = _shadowMapEffect.Techniques["RenderDepth"];
-
-            _ui.Add(_shadedEffect);
-
             _shadowMap = new RenderTarget2D(GraphicsDevice, 4096, 4096, false, SurfaceFormat.Single, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents);
 
-            Entities.Add(new GroundEntity(Content, "Ground"));
-            Entities.Add(new CampfireEntity(Content, "Campfire"));
-            Entities.Add(new CarEntity(Content, "Car"));
-            Entities.Add(new TentEntity(Content, "Tent"));
+            var entityFactory = new EntityFactory(Content);
+
+            Entities.Add(entityFactory.CreateEntity<GroundEntity>("Ground"));
+            Entities.Add(entityFactory.CreateEntity<CampfireEntity>("Campfire"));
+            Entities.Add(entityFactory.CreateEntity<CarEntity>("Car"));
+            Entities.Add(entityFactory.CreateEntity<TentEntity>("Tent"));
 
             _sun = new Sun(this);
             _updatable.Add(_sun);
@@ -165,7 +158,7 @@ namespace ShaderTest
             {
                 if (!entity.IncludeInShadowMap) continue;
 
-                entity.Draw(GraphicsDevice, _shadowMapEffect, renderContext);
+                entity.Draw(GraphicsDevice, renderContext, GameShaders.ShadowMap);
             }
 
             GraphicsDevice.SetRenderTarget(null);
@@ -175,7 +168,7 @@ namespace ShaderTest
 
             foreach (var entity in Entities)
             {
-                entity.Draw(GraphicsDevice, _pbrEffect, renderContext);
+                entity.Draw(GraphicsDevice, renderContext);
             }
 
             _spriteBatch.Begin();

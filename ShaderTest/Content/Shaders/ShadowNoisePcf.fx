@@ -15,7 +15,7 @@ bool IsInShadow(float4 worldPosition, float4 shadowMapPosition, int iteration)
 {
     float4 seed = float4(iteration, worldPosition.xyz);
     float2 samplePosition = shadowMapPosition.xy + (randomOffset(seed) / SampleOffsetScalar);
-    float sampledDepth = ShadowMap.Sample(ClampedSampler, samplePosition);
+    float sampledDepth = ShadowMap.Sample(ShadowMapSampler, samplePosition);
     
     return sampledDepth < shadowMapPosition.z;
 }
@@ -55,5 +55,3 @@ float CalculateShadowScalar(float4 worldPosition, float4 shadowMapPosition, out 
     
     return shadowScalar;
 }
-
-DT(shadow);

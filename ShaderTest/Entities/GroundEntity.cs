@@ -2,30 +2,42 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using ShaderTest.Shaders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShaderTest.Entities
 {
-    public class GroundEntity(ContentManager content, string name) : ModelEntity(content, name)
+    public class GroundEntity : ModelEntity
     {
         public override bool IncludeInShadowMap => true;
 
-        protected override void LoadContent(ContentManager content)
+        public override void LoadContent(ContentManager content)
         {
             Model = content.Load<Model>("Models/Ground/Ground");
             World = Matrix.CreateScale(2f) * Matrix.CreateTranslation(3f, -2f, 0f);
 
-            BoneParameters.Add("Default", new EffectParameters
+            BoneShaders.Add("Default", new BoneShaders
             {
-                Texture = content.Load<Texture2D>("Models/Ground/Ground.Color"),
-                RmaMap = content.Load<Texture2D>("Models/Ground/Ground.RMA"),
-                NormalMap = content.Load<Texture2D>("Models/Ground/Ground.Normals"),
-                Technique = "DrawTexturedRmaNormal"
+                ConfiguredShaders =
+                [
+                    new PbrEffect
+                    {
+                        UseTexture = true,
+                        Texture = content.Load<Texture2D>("Models/Ground/Ground.Color"),
+                        UseRmaMap = true,
+                        RmaMap = content.Load<Texture2D>("Models/Ground/Ground.RMA"),
+                        UseNormalMap = true,
+                        NormalMap = content.Load<Texture2D>("Models/Ground/Ground.Normals"),
+                        Roughness = 1.0f,
+                        Metallic = 0.0f,
+                        AmbientOcclusion = 1.0f
+                    },
+                    new BlinnPhongEffect
+                    {
+                        UseTexture = true,
+                        Texture = content.Load<Texture2D>("Models/Ground/Ground.Color"),
+                        SpecularColor = Color.White,
+                        SpecularPower = 0.0f,
+                    }
+                ]
             });
         }
     }

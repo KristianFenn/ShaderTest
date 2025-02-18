@@ -10,24 +10,39 @@ using System.Threading.Tasks;
 
 namespace ShaderTest.Entities
 {
-    public class CampfireEntity(ContentManager content, string name) : ModelEntity(content, name)
+    public class CampfireEntity : ModelEntity
     {
         public override bool IncludeInShadowMap => true;
 
-        protected override void LoadContent(ContentManager content)
+        public override void LoadContent(ContentManager content)
         {
             Model = content.Load<Model>("Models/Campfire/Campfire");
             World = Matrix.CreateTranslation(0f, -2f, 0f);
 
-            BoneParameters.Add("Default", new EffectParameters
+            BoneShaders.Add("Default", new BoneShaders
             {
-                Texture = content.Load<Texture2D>("Models/Campfire/Campfire.Color"),
-                DiffuseColor = Color.White,
-                SpecularColor = Color.White,
-                SpecularPower = 0.1f,
-                DrawTexture = true
+                ConfiguredShaders =
+                [
+                    new PbrEffect
+                    {
+                        UseTexture = true,
+                        Texture = content.Load<Texture2D>("Models/Campfire/Campfire.Color"),
+                        UseRmaMap = false,
+                        UseNormalMap = false,
+                        Roughness = 1.0f,
+                        Metallic = 0.0f,
+                        AmbientOcclusion = 1.0f
+                    },
+                    new BlinnPhongEffect
+                    {
+                        UseTexture = true,
+                        Texture = content.Load<Texture2D>("Models/Campfire/Campfire.Color"),
+                        SpecularColor = Color.White,
+                        SpecularPower = 0.0f,
+                        DiffuseColor = Color.White,
+                    }
+                ]
             });
-
         }
     }
 }

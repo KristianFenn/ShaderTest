@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,10 +11,69 @@ namespace ShaderTest.Shaders
 {
     public class PbrEffect(Effect cloneSource) : BaseEffect(cloneSource)
     {
-        private static readonly Matrix LightToShadowMap = Matrix.CreateScale(0.5f, -0.5f, 1f)
-            * Matrix.CreateTranslation(0.5f, 0.5f, 0f);
+        public PbrEffect() : this(GameShaders.Pbr) { }
 
-        public override void ApplyRenderContext(Matrix world, RenderContext renderContext, EffectParameters effectParameters)
+        public bool UseTexture
+        {
+            get => GetParameter().GetValueBoolean();
+            set => GetParameter().SetValue(value);
+        }
+
+        public Texture2D Texture
+        {
+            get => GetParameter("TextureSampler+Texture").GetValueTexture2D();
+            set => GetParameter("TextureSampler+Texture").SetValue(value);
+        }
+
+        public bool UseRmaMap
+        {
+            get => GetParameter().GetValueBoolean();
+            set => GetParameter().SetValue(value);
+        }
+
+        public Texture2D RmaMap
+        {
+            get => GetParameter("RmaMapSampler+RmaMap").GetValueTexture2D();
+            set => GetParameter("RmaMapSampler+RmaMap").SetValue(value);
+        }
+
+        public bool UseNormalMap
+        {
+            get => GetParameter().GetValueBoolean();
+            set => GetParameter().SetValue(value);
+        }
+
+        public Texture2D NormalMap
+        {
+            get => GetParameter("NormalMapSampler+NormalMap").GetValueTexture2D();
+            set => GetParameter("NormalMapSampler+NormalMap").SetValue(value);
+        }
+
+        public Color Albedo
+        { 
+            get => GetParameter().GetValueColor4();
+            set => GetParameter().SetValue(value.ToVector3());
+        }
+
+        public float Metallic 
+        {
+            get => GetParameter().GetValueSingle();
+            set => GetParameter().SetValue(value);
+        }
+
+        public float Roughness 
+        {
+            get => GetParameter().GetValueSingle();
+            set => GetParameter().SetValue(value);
+        }
+
+        public float AmbientOcclusion 
+        {
+            get => GetParameter().GetValueSingle();
+            set => GetParameter().SetValue(value);
+        }
+
+        public override void ApplyRenderContext(Matrix world, RenderContext renderContext)
         {
             var modelToView = world * renderContext.View;
             Parameters["ModelToWorld"]?.SetValue(world);
@@ -22,16 +82,8 @@ namespace ShaderTest.Shaders
             Parameters["ModelToScreen"].SetValue(modelToView * renderContext.Projection);
             Parameters["LightPosition"].SetValue(renderContext.LightPosition);
             Parameters["LightColor"].SetValue(renderContext.LightColor);
-            Parameters["ClampedSampler+ShadowMap"]?.SetValue(renderContext.ShadowMap);
-            Parameters["ModelToShadowMap"]?.SetValue(world * renderContext.WorldToLight * LightToShadowMap);
-
-            Parameters["Metallic"].SetValue(effectParameters.Metallic);
-            Parameters["Roughness"].SetValue(effectParameters.Roughness);
-            Parameters["AmbientOcclusion"].SetValue(effectParameters.AmbientOcclusion);
-            Parameters["TextureSampler+Texture"].SetValue(effectParameters.Texture);
-            Parameters["ClampedSampler+RmaMap"].SetValue(effectParameters.RmaMap);
-            Parameters["LinearSampler+NormalMap"].SetValue(effectParameters.NormalMap);
-            CurrentTechnique = Techniques[effectParameters.Technique];
+            Parameters["ShadowMapSampler+ShadowMap"]?.SetValue(renderContext.ShadowMap);
+            Parameters["ModelToShadowMap"]?.SetValue(world * renderContext.WorldToLight * McFaceMatrix.LightToShadowMap);
         }
     }
 }

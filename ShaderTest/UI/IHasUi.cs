@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ShaderTest.Updatables
+namespace ShaderTest.UI
 {
     public interface IHasUi
     {

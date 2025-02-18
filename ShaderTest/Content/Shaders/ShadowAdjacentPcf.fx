@@ -15,7 +15,7 @@ float CalculateShadowScalar(float4 viewPosition, float4 shadowMapPosition, out b
         {
             float2 offset = float2(x - 2, y - 2);
             float2 samplePosition = shadowMapPosition.xy + (offset * texelSize);
-            float sampledDepth = ShadowMap.Sample(ClampedSampler, samplePosition);
+            float sampledDepth = ShadowMap.Sample(ShadowMapSampler, samplePosition);
             
             if (sampledDepth < shadowMapPosition.z)
             {
@@ -26,5 +26,3 @@ float CalculateShadowScalar(float4 viewPosition, float4 shadowMapPosition, out b
     
     return 1.0f - (inShadowSamples / 25.0f);
 }
-
-DT(shadow);
