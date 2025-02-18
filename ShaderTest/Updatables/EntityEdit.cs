@@ -11,6 +11,14 @@ namespace ShaderTest.Updatables
 {
     public class EntityEdit(ShaderTestGame game) : Updatable(game), IHasUi
     {
+        private readonly string[] Techniques = [
+            "DrawTextured",
+            "DrawTexturedRma",
+            "DrawTexturedRmaNormal",
+            "DrawNormals",
+            "DrawMapNormals"
+        ];
+
         private ModelEntity _selectedEntity = null;
         private string _selectedBone = "";
 
@@ -51,10 +59,21 @@ namespace ShaderTest.Updatables
 
                 var selectedBone = _selectedEntity.BoneParameters[_selectedBone];
 
-                ImGui.ColorEdit3("Diffuse color", ref selectedBone.DiffuseEdit);
-                ImGui.ColorEdit3("Specular color", ref selectedBone.SpecularEdit);
-                ImGui.SliderFloat("Specular power", ref selectedBone.SpecularPower, 0.0f, 1.0f);
-                ImGui.Checkbox("Textured", ref selectedBone.DrawTexture);
+                if (ImGui.BeginCombo("Technique", selectedBone.Technique))
+                {
+                    foreach (var name in Techniques)
+                    {
+                        if (ImGui.Selectable(name, selectedBone.Technique == name))
+                        {
+                            selectedBone.Technique = name;
+                        }
+                    }
+                    ImGui.EndCombo();
+                }
+
+                ImGui.SliderFloat("Metallic", ref selectedBone.Metallic, 0.0f, 1.0f);
+                ImGui.SliderFloat("Roughness", ref selectedBone.Roughness, 0.0f, 1.0f);
+                ImGui.SliderFloat("AmbientOcclusion", ref selectedBone.AmbientOcclusion, 0.0f, 1.0f);
             }
 
             ImGui.End();

@@ -8,10 +8,10 @@ namespace ShaderTest.Updatables
         private readonly Vector2 MouseClampPos;
         private const float CameraSpeed = 5.0f;
         private Vector3 _cameraDir;
-        private Vector3 _cameraPos;
 
         public Matrix View { get; private set; }
         public Matrix Projection { get; private set; }
+        public Vector3 Position { get; private set; }
 
         public Camera(ShaderTestGame game) : base(game)
         {
@@ -51,26 +51,26 @@ namespace ShaderTest.Updatables
 
                 if (currentKb.IsKeyDown(Keys.W))
                 {
-                    _cameraPos += (_cameraDir * appliedSpeed);
+                    Position += (_cameraDir * appliedSpeed);
                 }
 
                 if (currentKb.IsKeyDown(Keys.S))
                 {
-                    _cameraPos -= (_cameraDir * appliedSpeed);
+                    Position -= (_cameraDir * appliedSpeed);
                 }
 
                 if (currentKb.IsKeyDown(Keys.A))
                 {
-                    _cameraPos += (cameraLeft * appliedSpeed);
+                    Position += (cameraLeft * appliedSpeed);
                 }
 
                 if (currentKb.IsKeyDown(Keys.D))
                 {
-                    _cameraPos -= (cameraLeft * appliedSpeed);
+                    Position -= (cameraLeft * appliedSpeed);
                 }
             }
 
-            View = Matrix.CreateLookAt(_cameraPos, _cameraPos + _cameraDir, Vector3.Up);
+            View = Matrix.CreateLookAt(Position, Position + _cameraDir, Vector3.Up);
         }
     }
 }

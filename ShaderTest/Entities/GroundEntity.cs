@@ -23,10 +23,9 @@ namespace ShaderTest.Entities
             BoneParameters.Add("Default", new EffectParameters
             {
                 Texture = content.Load<Texture2D>("Models/Ground/Ground.Color"),
-                DiffuseColor = Color.White,
-                SpecularColor = Color.Brown,
-                SpecularPower = 0.1f,
-                DrawTexture = true
+                RmaMap = content.Load<Texture2D>("Models/Ground/Ground.RMA"),
+                NormalMap = content.Load<Texture2D>("Models/Ground/Ground.Normals"),
+                Technique = "DrawTexturedRmaNormal"
             });
         }
     }

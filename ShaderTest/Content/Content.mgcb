@@ -1,33 +1,89 @@
-
-#----------------------------- Global Properties ----------------------------#
-
-/outputDir:bin/$(Platform)
-/intermediateDir:obj/$(Platform)
+/outputDir:bin\Debug\net8.0\
+/intermediateDir:obj\Debug\net8.0\
 /platform:DesktopGL
 /config:
 /profile:Reach
-/compress:False
+/compress:false
 
-#-------------------------------- References --------------------------------#
+#begin Shaders\AdjacentPcfShadow.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:Importer=EffectImporter
+/processorParam:Processor=EffectProcessor
+/processorParam:DebugMode=Auto
+/processorParam:Defines=
+/build:Shaders\AdjacentPcfShadow.fx
 
+#begin Shaders\Common.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:Importer=EffectImporter
+/processorParam:Processor=EffectProcessor
+/processorParam:DebugMode=Auto
+/processorParam:Defines=
+/build:Shaders\Common.fx
 
-#---------------------------------- Content ---------------------------------#
+#begin Shaders\Depth.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:Importer=EffectImporter
+/processorParam:Processor=EffectProcessor
+/processorParam:DebugMode=Auto
+/processorParam:Defines=
+/build:Shaders\Depth.fx
 
-#begin Arial.spritefont
-/importer:FontDescriptionImporter
-/processor:LocalizedFontProcessor
-/processorParam:PremultiplyAlpha=True
-/processorParam:TextureFormat=Compressed
-/build:Arial.spritefont
+#begin Shaders\JitteredDiskPcfShadow.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:Importer=EffectImporter
+/processorParam:Processor=EffectProcessor
+/processorParam:DebugMode=Auto
+/processorParam:Defines=
+/build:Shaders\JitteredDiskPcfShadow.fx
+
+#begin Shaders\NoisePcfShadow.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:Importer=EffectImporter
+/processorParam:Processor=EffectProcessor
+/processorParam:DebugMode=Auto
+/processorParam:Defines=
+/build:Shaders\NoisePcfShadow.fx
+
+#begin Shaders\PBRTest.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:Importer=EffectImporter
+/processorParam:Processor=EffectProcessor
+/processorParam:DebugMode=Auto
+/processorParam:Defines=
+/build:Shaders\PBRTest.fx
+
+#begin Shaders\StratifiedPoissonShadow.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:Importer=EffectImporter
+/processorParam:Processor=EffectProcessor
+/processorParam:DebugMode=Auto
+/processorParam:Defines=
+/build:Shaders\StratifiedPoissonShadow.fx
+
+#begin Shaders\Test.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:Importer=EffectImporter
+/processorParam:Processor=EffectProcessor
+/processorParam:DebugMode=Auto
+/processorParam:Defines=
+/build:Shaders\Test.fx
 
 #begin Cabinet.fbx
 /importer:FbxImporter
 /processor:ModelProcessor
-/processorParam:ColorKeyColor=0,0,0,0
+/processorParam:ColorKeyColor=255,255,255,255
 /processorParam:ColorKeyEnabled=True
-/processorParam:DefaultEffect=BasicEffect
 /processorParam:GenerateMipmaps=True
-/processorParam:GenerateTangentFrames=False
+/processorParam:GenerateTangentFrames=true
 /processorParam:PremultiplyTextureAlpha=True
 /processorParam:PremultiplyVertexColors=True
 /processorParam:ResizeTexturesToPowerOfTwo=False
@@ -42,15 +98,14 @@
 #begin IcoSphere.fbx
 /importer:FbxImporter
 /processor:ModelProcessor
-/processorParam:ColorKeyColor=0,0,0,0
+/processorParam:ColorKeyColor=255,255,255,255
 /processorParam:ColorKeyEnabled=True
-/processorParam:DefaultEffect=BasicEffect
 /processorParam:GenerateMipmaps=True
-/processorParam:GenerateTangentFrames=False
+/processorParam:GenerateTangentFrames=true
 /processorParam:PremultiplyTextureAlpha=True
 /processorParam:PremultiplyVertexColors=True
 /processorParam:ResizeTexturesToPowerOfTwo=False
-/processorParam:RotationX=0
+/processorParam:RotationX=-90
 /processorParam:RotationY=0
 /processorParam:RotationZ=0
 /processorParam:Scale=1
@@ -58,26 +113,13 @@
 /processorParam:TextureFormat=Compressed
 /build:IcoSphere.fbx
 
-#begin Models/Campfire/Campfire.Color.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Models/Campfire/Campfire.Color.png
-
-#begin Models/Campfire/Campfire.fbx
+#begin Models\Campfire\Campfire.fbx
 /importer:FbxImporter
 /processor:ModelProcessor
-/processorParam:ColorKeyColor=0,0,0,0
+/processorParam:ColorKeyColor=255,255,255,255
 /processorParam:ColorKeyEnabled=True
-/processorParam:DefaultEffect=BasicEffect
 /processorParam:GenerateMipmaps=True
-/processorParam:GenerateTangentFrames=False
+/processorParam:GenerateTangentFrames=true
 /processorParam:PremultiplyTextureAlpha=True
 /processorParam:PremultiplyVertexColors=True
 /processorParam:ResizeTexturesToPowerOfTwo=False
@@ -87,28 +129,15 @@
 /processorParam:Scale=1
 /processorParam:SwapWindingOrder=False
 /processorParam:TextureFormat=Compressed
-/build:Models/Campfire/Campfire.fbx
+/build:Models\Campfire\Campfire.fbx
 
-#begin Models/Car/Car.Color.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Models/Car/Car.Color.png
-
-#begin Models/Car/Car.fbx
+#begin Models\Car\Car.fbx
 /importer:FbxImporter
 /processor:ModelProcessor
-/processorParam:ColorKeyColor=0,0,0,0
+/processorParam:ColorKeyColor=255,255,255,255
 /processorParam:ColorKeyEnabled=True
-/processorParam:DefaultEffect=BasicEffect
 /processorParam:GenerateMipmaps=True
-/processorParam:GenerateTangentFrames=False
+/processorParam:GenerateTangentFrames=true
 /processorParam:PremultiplyTextureAlpha=True
 /processorParam:PremultiplyVertexColors=True
 /processorParam:ResizeTexturesToPowerOfTwo=False
@@ -118,40 +147,15 @@
 /processorParam:Scale=1
 /processorParam:SwapWindingOrder=False
 /processorParam:TextureFormat=Compressed
-/build:Models/Car/Car.fbx
+/build:Models\Car\Car.fbx
 
-#begin Models/Car/Tyre.Color.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Models/Car/Tyre.Color.png
-
-#begin Models/Ground/Ground.Color.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Models/Ground/Ground.Color.png
-
-#begin Models/Ground/Ground.fbx
+#begin Models\Ground\Ground.fbx
 /importer:FbxImporter
 /processor:ModelProcessor
-/processorParam:ColorKeyColor=0,0,0,0
+/processorParam:ColorKeyColor=255,255,255,255
 /processorParam:ColorKeyEnabled=True
-/processorParam:DefaultEffect=BasicEffect
 /processorParam:GenerateMipmaps=True
-/processorParam:GenerateTangentFrames=False
+/processorParam:GenerateTangentFrames=true
 /processorParam:PremultiplyTextureAlpha=True
 /processorParam:PremultiplyVertexColors=True
 /processorParam:ResizeTexturesToPowerOfTwo=False
@@ -161,28 +165,15 @@
 /processorParam:Scale=1
 /processorParam:SwapWindingOrder=False
 /processorParam:TextureFormat=Compressed
-/build:Models/Ground/Ground.fbx
+/build:Models\Ground\Ground.fbx
 
-#begin Models/Tent/Tent.Color.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Models/Tent/Tent.Color.png
-
-#begin Models/Tent/Tent.fbx
+#begin Models\Tent\Tent.fbx
 /importer:FbxImporter
 /processor:ModelProcessor
-/processorParam:ColorKeyColor=0,0,0,0
+/processorParam:ColorKeyColor=255,255,255,255
 /processorParam:ColorKeyEnabled=True
-/processorParam:DefaultEffect=BasicEffect
 /processorParam:GenerateMipmaps=True
-/processorParam:GenerateTangentFrames=False
+/processorParam:GenerateTangentFrames=true
 /processorParam:PremultiplyTextureAlpha=True
 /processorParam:PremultiplyVertexColors=True
 /processorParam:ResizeTexturesToPowerOfTwo=False
@@ -192,29 +183,15 @@
 /processorParam:Scale=1
 /processorParam:SwapWindingOrder=False
 /processorParam:TextureFormat=Compressed
-/build:Models/Tent/Tent.fbx
-
-#begin Shaders/Depth.fx
-/importer:EffectImporter
-/processor:EffectProcessor
-/processorParam:DebugMode=Auto
-/build:Shaders/Depth.fx
-
-#begin Shaders/Test.fx
-/importer:EffectImporter
-/processor:EffectProcessor
-/processorParam:DebugMode=Auto
-/processorParam:Defines=
-/build:Shaders/Test.fx
+/build:Models\Tent\Tent.fbx
 
 #begin teapot.fbx
 /importer:FbxImporter
 /processor:ModelProcessor
-/processorParam:ColorKeyColor=0,0,0,0
+/processorParam:ColorKeyColor=255,255,255,255
 /processorParam:ColorKeyEnabled=True
-/processorParam:DefaultEffect=BasicEffect
 /processorParam:GenerateMipmaps=True
-/processorParam:GenerateTangentFrames=False
+/processorParam:GenerateTangentFrames=true
 /processorParam:PremultiplyTextureAlpha=True
 /processorParam:PremultiplyVertexColors=True
 /processorParam:ResizeTexturesToPowerOfTwo=False
@@ -229,15 +206,14 @@
 #begin UVSphere.fbx
 /importer:FbxImporter
 /processor:ModelProcessor
-/processorParam:ColorKeyColor=0,0,0,0
+/processorParam:ColorKeyColor=255,255,255,255
 /processorParam:ColorKeyEnabled=True
-/processorParam:DefaultEffect=BasicEffect
 /processorParam:GenerateMipmaps=True
-/processorParam:GenerateTangentFrames=False
+/processorParam:GenerateTangentFrames=true
 /processorParam:PremultiplyTextureAlpha=True
 /processorParam:PremultiplyVertexColors=True
 /processorParam:ResizeTexturesToPowerOfTwo=False
-/processorParam:RotationX=0
+/processorParam:RotationX=-90
 /processorParam:RotationY=0
 /processorParam:RotationZ=0
 /processorParam:Scale=1
@@ -245,3 +221,143 @@
 /processorParam:TextureFormat=Compressed
 /build:UVSphere.fbx
 
+#begin Cabinet.fbm\Cabinet.001.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=false
+/processorParam:GenerateMipmaps=false
+/processorParam:PremultiplyAlpha=false
+/processorParam:ResizeToPowerOfTwo=false
+/processorParam:MakeSquare=false
+/processorParam:TextureFormat=color
+/build:Cabinet.fbm\Cabinet.001.png
+
+#begin Models\Campfire\Campfire.Color.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=false
+/processorParam:GenerateMipmaps=false
+/processorParam:PremultiplyAlpha=false
+/processorParam:ResizeToPowerOfTwo=false
+/processorParam:MakeSquare=false
+/processorParam:TextureFormat=color
+/build:Models\Campfire\Campfire.Color.png
+
+#begin Models\Car\Car.Color.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=false
+/processorParam:GenerateMipmaps=false
+/processorParam:PremultiplyAlpha=false
+/processorParam:ResizeToPowerOfTwo=false
+/processorParam:MakeSquare=false
+/processorParam:TextureFormat=color
+/build:Models\Car\Car.Color.png
+
+#begin Models\Car\Car.Normals.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=false
+/processorParam:GenerateMipmaps=false
+/processorParam:PremultiplyAlpha=false
+/processorParam:ResizeToPowerOfTwo=false
+/processorParam:MakeSquare=false
+/processorParam:TextureFormat=color
+/build:Models\Car\Car.Normals.png
+
+#begin Models\Car\Car.RMA.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=false
+/processorParam:GenerateMipmaps=false
+/processorParam:PremultiplyAlpha=false
+/processorParam:ResizeToPowerOfTwo=false
+/processorParam:MakeSquare=false
+/processorParam:TextureFormat=color
+/build:Models\Car\Car.RMA.png
+
+#begin Models\Car\Tyre.Color.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=false
+/processorParam:GenerateMipmaps=false
+/processorParam:PremultiplyAlpha=false
+/processorParam:ResizeToPowerOfTwo=false
+/processorParam:MakeSquare=false
+/processorParam:TextureFormat=color
+/build:Models\Car\Tyre.Color.png
+
+#begin Models\Ground\Ground.AO.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=false
+/processorParam:GenerateMipmaps=false
+/processorParam:PremultiplyAlpha=false
+/processorParam:ResizeToPowerOfTwo=false
+/processorParam:MakeSquare=false
+/processorParam:TextureFormat=color
+/build:Models\Ground\Ground.AO.png
+
+#begin Models\Ground\Ground.Color.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=false
+/processorParam:GenerateMipmaps=false
+/processorParam:PremultiplyAlpha=false
+/processorParam:ResizeToPowerOfTwo=false
+/processorParam:MakeSquare=false
+/processorParam:TextureFormat=color
+/build:Models\Ground\Ground.Color.png
+
+#begin Models\Ground\Ground.Normals.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=false
+/processorParam:GenerateMipmaps=false
+/processorParam:PremultiplyAlpha=false
+/processorParam:ResizeToPowerOfTwo=false
+/processorParam:MakeSquare=false
+/processorParam:TextureFormat=color
+/build:Models\Ground\Ground.Normals.png
+
+#begin Models\Ground\Ground.RMA.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=false
+/processorParam:GenerateMipmaps=false
+/processorParam:PremultiplyAlpha=false
+/processorParam:ResizeToPowerOfTwo=false
+/processorParam:MakeSquare=false
+/processorParam:TextureFormat=color
+/build:Models\Ground\Ground.RMA.png
+
+#begin Models\Tent\Tent.Color.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=false
+/processorParam:GenerateMipmaps=false
+/processorParam:PremultiplyAlpha=false
+/processorParam:ResizeToPowerOfTwo=false
+/processorParam:MakeSquare=false
+/processorParam:TextureFormat=color
+/build:Models\Tent\Tent.Color.png
+
+#begin Arial.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:Importer=FontDescriptionImporter
+/processorParam:Processor=FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Arial.spritefont

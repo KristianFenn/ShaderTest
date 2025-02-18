@@ -29,9 +29,16 @@ namespace ShaderTest.Shaders
             set => specularColor = value.ToVector3().ToNumerics();
         }
 
-
         public float SpecularPower = 1.0f;
         public bool DrawTexture;
+
+        public float Metallic = 0.0f;
+        public float Roughness = 0.0f;
+        public float AmbientOcclusion = 1.0f;
+
         public Texture2D Texture { get; set; }
+        public Texture2D RmaMap { get; set; }
+        public Texture2D NormalMap { get; set; }
+        public string Technique { get; set; } = "DrawTextured";
     }
 }

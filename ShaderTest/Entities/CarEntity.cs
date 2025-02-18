@@ -19,25 +19,21 @@ namespace ShaderTest.Entities
         protected override void LoadContent(ContentManager content)
         {
             Model = content.Load<Model>("Models/Car/Car");
-            World = Matrix.CreateScale(0.4f) 
-                * Matrix.CreateFromAxisAngle(Vector3.Up, MathHelper.ToRadians(-20f)) 
+            World = Matrix.CreateScale(0.4f)
+                * Matrix.CreateFromAxisAngle(Vector3.Up, MathHelper.ToRadians(-20f))
                 * Matrix.CreateTranslation(_position);
 
             BoneParameters.Add("Default", new EffectParameters
             {
                 Texture = content.Load<Texture2D>("Models/Car/Car.Color"),
-                DiffuseColor = Color.White,
-                SpecularColor = Color.White,
-                SpecularPower = 1f,
-                DrawTexture = true
+                RmaMap = content.Load<Texture2D>("Models/Car/Car.RMA"),
+                NormalMap = content.Load<Texture2D>("Models/Car/Car.Normals"),
+                Technique = "DrawTexturedRmaNormal"
             });
 
             BoneParameters.Add("Wheel.FL", new EffectParameters
             {
                 Texture = content.Load<Texture2D>("Models/Car/Tyre.Color"),
-                DiffuseColor = Color.White,
-                SpecularColor = Color.White,
-                SpecularPower = 1f,
                 DrawTexture = true
             });
         }

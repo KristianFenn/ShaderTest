@@ -22,6 +22,7 @@ namespace ShaderTest
         private SpriteBatch _spriteBatch;
         private ShadedEffect _shadedEffect;
         private ShadowMapEffect _shadowMapEffect;
+        private PbrEffect _pbrEffect;
         private SpriteFont _arial;
 
         private RenderTarget2D _shadowMap;
@@ -50,7 +51,7 @@ namespace ShaderTest
             _graphics.PreparingDeviceSettings += (object sender, PreparingDeviceSettingsEventArgs e) =>
             {
                 e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
-            };
+            };            
         }
 
         protected override void Initialize()
@@ -59,6 +60,30 @@ namespace ShaderTest
             _stats = new GameStats(GraphicsDevice);
 
             base.Initialize();
+
+            // Regular textures
+            GraphicsDevice.SamplerStates[0] = new SamplerState
+            {
+                Filter = TextureFilter.Anisotropic,
+                MaxAnisotropy = 16
+            };
+
+            // Clamped map sampler (shadows, RMA)
+            GraphicsDevice.SamplerStates[1] = new SamplerState
+            {
+                Filter = TextureFilter.Point,
+                AddressU = TextureAddressMode.Border,
+                AddressV = TextureAddressMode.Border,
+                BorderColor = Color.White,
+            };
+
+            // Interpolated maps (normals)
+            GraphicsDevice.SamplerStates[2] = new SamplerState
+            {
+                Filter = TextureFilter.Linear,
+                AddressU = TextureAddressMode.Wrap,
+                AddressV = TextureAddressMode.Wrap,
+            };
         }
 
         protected override void LoadContent()
@@ -72,6 +97,7 @@ namespace ShaderTest
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _shadedEffect = new ShadedEffect(Content.Load<Effect>("Shaders/Test"));
             _shadowMapEffect = new ShadowMapEffect(Content.Load<Effect>("Shaders/Depth"));
+            _pbrEffect = new PbrEffect(Content.Load<Effect>("Shaders/PBRTest"));
             _arial = Content.Load<SpriteFont>("Arial");
             _shadowMapEffect.CurrentTechnique = _shadowMapEffect.Techniques["RenderDepth"];
 
@@ -100,6 +126,8 @@ namespace ShaderTest
             var editor = new EntityEdit(this);
             _updatable.Add(editor);
             _ui.Add(editor);
+
+            GameDebug.Initialize(GraphicsDevice, _arial);
         }
 
         protected override void Update(GameTime gameTime)
@@ -131,7 +159,7 @@ namespace ShaderTest
             GraphicsDevice.SetRenderTarget(_shadowMap);
             GraphicsDevice.Clear(Color.White);
 
-            var renderContext = new RenderContext(Camera.View, Camera.Projection, _sun.View, _sun.Projection, _sun.Position, _shadowMap);
+            var renderContext = new RenderContext(Camera.View, Camera.Projection, Camera.Position, _sun.View, _sun.Projection, _sun.Position, _sun.SunColor, _shadowMap);
 
             foreach (var entity in Entities)
             {
@@ -147,12 +175,12 @@ namespace ShaderTest
 
             foreach (var entity in Entities)
             {
-                entity.Draw(GraphicsDevice, _shadedEffect, renderContext);
+                entity.Draw(GraphicsDevice, _pbrEffect, renderContext);
             }
 
             _spriteBatch.Begin();
             _stats.Draw(gameTime, _spriteBatch, GraphicsDevice, _arial);
-
+            GameDebug.DrawAxesToScreen(GraphicsDevice, _spriteBatch, _arial, Camera);
             _spriteBatch.End();
 
             _imgui.BeginLayout(gameTime);
@@ -163,6 +191,7 @@ namespace ShaderTest
             }
 
             _imgui.EndLayout();
+
 
             base.Draw(gameTime);
         }

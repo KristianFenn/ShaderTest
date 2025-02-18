@@ -1,7 +1,7 @@
-#include "ShadowCommon.fx"
+#include "Common.fx"
 
-static const float CoarseShadowSamples = 8;
-static const float FineShadowSamples = 32;
+static const float CoarseShadowSamples = 4;
+static const float FineShadowSamples = 16;
 
 static const float SampleOffsetScalar = 250.0f;
 
@@ -15,7 +15,7 @@ bool IsInShadow(float4 worldPosition, float4 shadowMapPosition, int iteration)
 {
     float4 seed = float4(iteration, worldPosition.xyz);
     float2 samplePosition = shadowMapPosition.xy + (randomOffset(seed) / SampleOffsetScalar);
-    float sampledDepth = ShadowMap.Sample(ShadowMapSampler, samplePosition);
+    float sampledDepth = ShadowMap.Sample(ClampedSampler, samplePosition);
     
     return sampledDepth < shadowMapPosition.z;
 }
@@ -55,3 +55,5 @@ float CalculateShadowScalar(float4 worldPosition, float4 shadowMapPosition, out 
     
     return shadowScalar;
 }
+
+DT(shadow);

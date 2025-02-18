@@ -21,8 +21,8 @@ namespace ShaderTest.Entities
 
         public ModelEntity(ContentManager content, string name)
         {
-            LoadContent(content);
             Name = name;
+            LoadContent(content);
         }
 
         protected abstract void LoadContent(ContentManager content);

@@ -1,4 +1,3 @@
-#include "Common.fx"
 #include "NoisePcfShadow.fx"
 
 float4x4 ModelToWorld;
@@ -14,7 +13,6 @@ float4 SpecularColor;
 float SpecularPower;
 
 Texture2D<float4> Texture;
-sampler TextureSampler : register(s0);
 
 struct VSInput
 {
