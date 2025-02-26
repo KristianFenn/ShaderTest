@@ -1,22 +1,16 @@
-using ImGuiNET;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using ShaderTest.Updatables;
-using System.Collections.Generic;
-
 namespace ShaderTest.Shaders
 {
     public class BlinnPhongEffect(Effect cloneSource) : BaseEffect(cloneSource)
     {
         public BlinnPhongEffect() : this(GameShaders.BlinnPhong) { }
 
-        public bool UseTexture 
+        public bool UseTexture
         {
             get => GetParameter().GetValueBoolean();
             set => GetParameter().SetValue(value);
         }
 
-        public Texture2D Texture 
+        public Texture2D Texture
         {
             get => GetParameter("TextureSampler+Texture").GetValueTexture2D();
             set => GetParameter("TextureSampler+Texture").SetValue(value);

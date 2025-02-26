@@ -1,13 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ShaderTest.Shaders
+﻿namespace ShaderTest.Shaders
 {
     public class PbrEffect(Effect cloneSource) : BaseEffect(cloneSource)
     {
@@ -50,24 +41,24 @@ namespace ShaderTest.Shaders
         }
 
         public Color Albedo
-        { 
-            get => GetParameter().GetValueColor4();
+        {
+            get => GetParameter().GetValueColor3();
             set => GetParameter().SetValue(value.ToVector3());
         }
 
-        public float Metallic 
+        public float Metallic
         {
             get => GetParameter().GetValueSingle();
             set => GetParameter().SetValue(value);
         }
 
-        public float Roughness 
+        public float Roughness
         {
             get => GetParameter().GetValueSingle();
             set => GetParameter().SetValue(value);
         }
 
-        public float AmbientOcclusion 
+        public float AmbientOcclusion
         {
             get => GetParameter().GetValueSingle();
             set => GetParameter().SetValue(value);
@@ -84,6 +75,9 @@ namespace ShaderTest.Shaders
             Parameters["LightColor"].SetValue(renderContext.LightColor);
             Parameters["ShadowMapSampler+ShadowMap"]?.SetValue(renderContext.ShadowMap);
             Parameters["ModelToShadowMap"]?.SetValue(world * renderContext.WorldToLight * McFaceMatrix.LightToShadowMap);
+
+            Parameters["Gamma"].SetValue(renderContext.Gamma);
+            Parameters["Exposure"].SetValue(renderContext.Exposure);
         }
     }
 }

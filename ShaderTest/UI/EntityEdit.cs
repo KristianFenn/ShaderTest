@@ -1,13 +1,7 @@
 ﻿using ImGuiNET;
-using Microsoft.Xna.Framework;
 using ShaderTest.Entities;
 using ShaderTest.Shaders;
 using ShaderTest.Updatables;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShaderTest.UI
 {
@@ -16,14 +10,14 @@ namespace ShaderTest.UI
         private ModelEntity _selectedEntity = null;
         private string _selectedBone = "";
 
+        public string Name => "Entity";
+
         public override void Update(GameTime gameTime)
         {
         }
 
         public void RenderUi()
         {
-            ImGui.Begin("Entity");
-
             if (ImGui.BeginCombo("Entities", _selectedEntity?.Name ?? "N/A"))
             {
                 foreach (var entity in Game.Entities)
@@ -82,9 +76,29 @@ namespace ShaderTest.UI
                     }
                     ImGui.EndCombo();
                 }
-            }
 
-            ImGui.End();
+                if (selectedShader is PbrEffect pbr)
+                {
+                    pbr.UseTexture = McFaceImGui.Checkbox("Use texture", pbr.UseTexture);
+                    pbr.Texture = McFaceImGui.TextureCombo("Texture", pbr.Texture);
+                    pbr.UseRmaMap = McFaceImGui.Checkbox("Use RMA map", pbr.UseRmaMap);
+                    pbr.RmaMap = McFaceImGui.TextureCombo("RMA map", pbr.RmaMap);
+                    pbr.UseNormalMap = McFaceImGui.Checkbox("Use normal map", pbr.UseNormalMap);
+                    pbr.NormalMap = McFaceImGui.TextureCombo("Normal map", pbr.NormalMap);
+                    pbr.Albedo = McFaceImGui.ColorEdit3("Albedo", pbr.Albedo);
+                    pbr.Roughness = McFaceImGui.SliderFloat("Roughness", pbr.Roughness, 0.0f, 1.0f);
+                    pbr.Metallic = McFaceImGui.SliderFloat("Metallic", pbr.Metallic, 0.0f, 1.0f);
+                    pbr.AmbientOcclusion = McFaceImGui.SliderFloat("Ambient occlusion", pbr.AmbientOcclusion, 0.0f, 1.0f);
+                }
+                else if (selectedShader is BlinnPhongEffect blinnPhong)
+                {
+                    blinnPhong.UseTexture = McFaceImGui.Checkbox("Use texture", blinnPhong.UseTexture);
+                    blinnPhong.Texture = McFaceImGui.TextureCombo("Texture", blinnPhong.Texture);
+                    blinnPhong.DiffuseColor = McFaceImGui.ColorEdit3("Diffuse color", blinnPhong.DiffuseColor);
+                    blinnPhong.SpecularColor = McFaceImGui.ColorEdit3("Specular color", blinnPhong.SpecularColor);
+                    blinnPhong.SpecularPower = McFaceImGui.SliderFloat("Specular power", blinnPhong.SpecularPower, 0.0f, 1.0f);
+                }
+            }
         }
     }
 }

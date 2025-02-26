@@ -53,54 +53,61 @@ V2P VShader(VSInput input)
     return output;
 }
 
-float3 fresnelSchlick(float incidence, float3 f0)
+/*
+    Fresnel function.
+
+    Calculates the amount of light reflected based on how close the normal vector is to the view vector.
+    As viewing angles increase from the normal, the amount of reflected light increases.
+*/
+float3 fresnelSchlick(float viewDotHalf, float3 f0)
 {
-    return f0 + (1.0 - f0) * pow(max(1.0 - incidence, 0.0f), 5.0f);
+    return f0 + (1.0 - f0) * pow(max(1.0 - viewDotHalf, 0.0f), 5.0f);
 }
 
-float distributionGGX(float3 normal, float3 halfVector, float roughness)
-{
-    float a = roughness * roughness;
-    float aSquared = a * a;
-    float normalDotHalf = max(dot(normal, halfVector), 0.0f);
-    float normalDotHalfSquared = normalDotHalf * normalDotHalf;
+/*
+    Normal distribution function. 
     
-    float denom = normalDotHalfSquared * (aSquared - 1.0f) + 1.0f;
+    This approximates the number of 'microfacets' that are aligned with the half vector, and as such reflect light to the camera.
+*/
+float distributionGGX(float normalDotHalf, float roughness)
+{
+    float a2 = roughness * roughness * roughness * roughness;    
+    float denom = normalDotHalf * normalDotHalf * (a2 - 1.0f) + 1.0f;
     denom = Pi * denom * denom;
     
-    return aSquared / denom;
+    return a2 / denom;
 }
 
-float geometrySchlickGGX(float normalDotView, float roughness)
+/*
+    Geometry function.
+    
+    Approximates how much 'self shadowing' is happening between microfacets.
+    We calculate this twice - once for the amount that the normal matches up with the light, and once for the amount that the normal matches up with the camera
+*/
+float geometrySchlickGGX(float dp, float roughness)
 {
     float r = (roughness + 1.0f);
     float k = (r * r) / 8.0f;
-    float denom = normalDotView * (1.0f - k) + k;
+    float denom = dp * (1.0f - k) + k;
 
-    return normalDotView / denom;
+    return dp / denom;
 }
 
-float geometrySmith(float3 normal, float3 view, float3 light, float roughness)
-{
-    float normalDotLight = max(dot(normal, light), 0.0f);
-    float normalDotView = max(dot(normal, view), 0.0f);
-    
-    float ggx1 = geometrySchlickGGX(normalDotLight, roughness);
-    float ggx2 = geometrySchlickGGX(normalDotView, roughness);
 
-    return ggx1 * ggx2;
-}
-
-float4 ApplyLightingModel(V2P input, float3 albedo, float roughness, float metallic, float ambientOcclusion, float3 normalVector)
+float4 ApplyLightingModel(V2P input, float3 albedo, float roughness, float metallic, float ambientOcclusion, float3 normalVector, float exposure, float gamma)
 {
     float3 light = normalize(LightPosition);
     float3 normal = normalize(normalVector);
     float3 view = normalize(-input.ViewPosition.xyz);
     float3 halfVector = normalize(view + light);
-    float incidence = max(dot(normal, light), 0.0f);
+    
+    float lightIncidence = max(dot(normal, light), 0.0f);
+    float viewIncidence = max(dot(normal, view), 0.0f);
+    float normalDotHalf = max(dot(normal, halfVector), 0.0f);
+    float viewDotHalf = max(dot(view, halfVector), 0.0f);
     
     bool highSample;
-    float shadowScalar = incidence > 0.0f
+    float shadowScalar = lightIncidence > 0.0f
         ? CalculateShadowScalar(input.WorldPosition, input.SMPosition, highSample) : 0.0f;
     
     float3 lightOut = float3(0.0f, 0.0f, 0.0f);
@@ -111,25 +118,33 @@ float4 ApplyLightingModel(V2P input, float3 albedo, float roughness, float metal
     
         float3 reflectionAtZero = float3(0.04f, 0.04f, 0.04f);
         reflectionAtZero = lerp(reflectionAtZero, albedo, metallic);
-    
-        float normalDistribution = distributionGGX(normal, halfVector, roughness);
-        float geometry = geometrySmith(normal, view, light, roughness);
-        float3 fresnel = fresnelSchlick(max(dot(halfVector, view), 0.0f), reflectionAtZero);
-    
-        float3 diffuse = (float3(1.0f, 1.0f, 1.0f) - fresnel) * (1.0f - metallic);
-    
-        float3 numerator = normalDistribution * geometry * fresnel;
-        float denominator = 4.0f * max(dot(normal, view), 0.0f) * incidence + 0.0001f;
-        float3 specular = numerator / denominator;
-    
-        lightOut = (diffuse * albedo / Pi + specular) * radiance * incidence * shadowScalar;
+        float3 fresnel = fresnelSchlick(viewDotHalf, reflectionAtZero);
+        
+        float3 specularAmount = fresnel;
+        float3 diffuseAmount = (float3(1.0f, 1.0f, 1.0f) - specularAmount) * (1.0f - metallic);
+        
+        float3 specularBrdfNumerator =
+            distributionGGX(normalDotHalf, roughness)
+            * fresnel
+            * geometrySchlickGGX(lightIncidence, roughness)
+            * geometrySchlickGGX(viewIncidence, roughness);
+        
+        float specularBrdfDenominator = (4.0f * viewIncidence * lightIncidence) + 0.0001f;
+        
+        float3 specularBrdf = specularBrdfNumerator / specularBrdfDenominator;
+        float3 diffuseBrdf = diffuseAmount * albedo / Pi;
+       
+        lightOut = (diffuseBrdf + specularBrdf) * radiance * lightIncidence * shadowScalar;
     }
     
     float3 ambient = float3(0.03f, 0.03f, 0.03f) * albedo * ambientOcclusion;
     float3 pixelColor = (ambient + lightOut);
     
-    pixelColor = pixelColor / (pixelColor + float3(1.0f, 1.0f, 1.0f));
-    float gammaCorrectionFactor = 1.0f / 2.2f;
+    // tone mapping
+    pixelColor = float3(1.0f, 1.0f, 1.0f) - exp(-pixelColor * exposure);
+    
+    // gamma correction
+    float gammaCorrectionFactor = 1.0f / gamma;
     pixelColor = pow(abs(pixelColor), float3(gammaCorrectionFactor, gammaCorrectionFactor, gammaCorrectionFactor));
     
     return float4(pixelColor, 1.0f);

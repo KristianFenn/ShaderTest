@@ -1,11 +1,5 @@
 ﻿using ImGuiNET;
-using Microsoft.Xna.Framework;
 using ShaderTest.UI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShaderTest.Updatables
 {
@@ -16,12 +10,14 @@ namespace ShaderTest.Updatables
         public Matrix View { get; private set; } = Matrix.Identity;
         public Matrix Projection { get; private set; } = Matrix.CreateOrthographic(48, 48, 0.1f, 200f);
 
+        public string Name => "Light";
+
         private const float MinutesPerDay = 1440f;
 
         private bool _runDayCycle = true;
         private float _timeOfDay = MinutesPerDay / 2;
         private float _dayLengthSeconds = 300f;
-        private Vector3 _midnightPos = new(0, -10, 0);
+        private Vector3 _midnightPos = new(0, -50, 0);
         private System.Numerics.Vector3 _sunColor = new(0.978f, 0.888f, 0.866f);
         private float _sunBrightness = 24f;
 
@@ -44,13 +40,11 @@ namespace ShaderTest.Updatables
 
         public void RenderUi()
         {
-            ImGui.Begin("Sunlight");
             ImGui.ColorEdit3("Sun colour", ref _sunColor);
             ImGui.SliderFloat("Sun strength", ref _sunBrightness, 10.0f, 40.0f);
             ImGui.SliderFloat("Day length", ref _dayLengthSeconds, 10f, 600f);
             ImGui.SliderFloat("Time of day", ref _timeOfDay, 0f, MinutesPerDay);
             ImGui.Checkbox("Run day cycle", ref _runDayCycle);
-            ImGui.End();
         }
     }
 }

@@ -1,8 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using System;
-
-namespace ShaderTest.Updatables
+﻿namespace ShaderTest.Updatables
 {
     public class MouseInputHandler(ShaderTestGame game) : Updatable(game)
     {

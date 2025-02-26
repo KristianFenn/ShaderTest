@@ -4,6 +4,8 @@ float3 Albedo;
 float Roughness;
 float Metallic;
 float AmbientOcclusion;
+float Exposure;
+float Gamma;
 
 bool UseTexture;
 bool UseRmaMap;
@@ -63,12 +65,12 @@ float4 PShaderDrawPBR(V2P input) : COLOR
         ao = rma.b;
     }
 
-    return ApplyLightingModel(input, albedo, roughness, metallic, ao, normal);
+    return ApplyLightingModel(input, albedo, roughness, metallic, ao, normal, Exposure, Gamma);
 }
 
 float4 PShaderDrawNormals(V2P input) : COLOR
 {
-    float3 normal = input.ViewNormal;
+    float3 normal = normalize(input.ViewNormal);
     
     if (UseNormalMap == true)
     {

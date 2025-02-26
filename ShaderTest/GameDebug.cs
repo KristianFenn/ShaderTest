@@ -1,8 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
-using ShaderTest.Updatables;
-using System.Linq;
+﻿using ShaderTest.Updatables;
 
 namespace ShaderTest
 {
