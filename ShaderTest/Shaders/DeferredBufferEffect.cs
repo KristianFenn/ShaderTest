@@ -2,9 +2,9 @@
 
 namespace ShaderTest.Shaders
 {
-    public class PbrEffect(Effect cloneSource) : BaseEffect(cloneSource)
+    public class DeferredBufferEffect(Effect cloneSource) : BaseEffect(cloneSource)
     {
-        public PbrEffect() : this(GameShaders.Pbr) { }
+        public DeferredBufferEffect() : this(GameShaders.Deferred) { }
 
         public bool UseTexture
         {
@@ -68,6 +68,7 @@ namespace ShaderTest.Shaders
 
         public override void ApplyRenderContext(Matrix world, RenderContext renderContext, Material material)
         {
+
             UseTexture = material.UseTexture;
             Texture = material.Texture;
             UseNormalMap = material.UseNormalMap;
@@ -83,13 +84,6 @@ namespace ShaderTest.Shaders
             Parameters["ModelToView"].SetValue(modelToView);
             Parameters["ModelToViewNormal"].SetValue(McFaceMatrix.CalculateNormalMatrix(modelToView));
             Parameters["ModelToScreen"].SetValue(modelToView * renderContext.Projection);
-            Parameters["LightPosition"].SetValue(renderContext.LightPosition);
-            Parameters["LightColor"].SetValue(renderContext.LightColor);
-            Parameters["ShadowMapSampler+ShadowMap"]?.SetValue(renderContext.ShadowMap);
-            Parameters["ModelToShadowMap"]?.SetValue(world * renderContext.WorldToLight * McFaceMatrix.LightToShadowMap);
-
-            Parameters["Gamma"].SetValue(renderContext.Gamma);
-            Parameters["Exposure"].SetValue(renderContext.Exposure);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework.Content;
-using ShaderTest.Shaders;
 
 namespace ShaderTest.Entities
 {
@@ -12,29 +11,15 @@ namespace ShaderTest.Entities
             Model = content.Load<Model>("Models/Campfire/Campfire");
             World = Matrix.CreateTranslation(0f, -2f, 0f);
 
-            BoneShaders.Add("Default", new BoneShaders
+            Materials.Add("Default", new Material
             {
-                ConfiguredShaders =
-                [
-                    new PbrEffect
-                    {
-                        UseTexture = true,
-                        Texture = content.Load<Texture2D>("Models/Campfire/Campfire.Color"),
-                        UseRmaMap = false,
-                        UseNormalMap = false,
-                        Roughness = 1.0f,
-                        Metallic = 0.0f,
-                        AmbientOcclusion = 1.0f
-                    },
-                    new BlinnPhongEffect
-                    {
-                        UseTexture = true,
-                        Texture = content.Load<Texture2D>("Models/Campfire/Campfire.Color"),
-                        SpecularColor = Color.White,
-                        SpecularPower = 0.0f,
-                        DiffuseColor = Color.White,
-                    }
-                ]
+                UseTexture = true,
+                Texture = content.Load<Texture2D>("Models/Campfire/Campfire.Color"),
+                UseRmaMap = false,
+                UseNormalMap = false,
+                Roughness = 1.0f,
+                Metallic = 0.0f,
+                AmbientOcclusion = 1.0f
             });
         }
     }

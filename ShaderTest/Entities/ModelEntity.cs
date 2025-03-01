@@ -8,7 +8,7 @@ namespace ShaderTest.Entities
         public string Name { get; init; }
         public Matrix World { get; protected set; }
         public Model Model { get; protected set; }
-        public Dictionary<string, BoneShaders> BoneShaders { get; protected set; } = [];
+        public Dictionary<string, Material> Materials { get; protected set; } = [];
         public abstract bool IncludeInShadowMap { get; }
 
         public abstract void LoadContent(ContentManager content);
@@ -33,7 +33,7 @@ namespace ShaderTest.Entities
             }
         }
 
-        public void Draw(GraphicsDevice graphicsDevice, RenderContext renderContext, BaseEffect effect = null)
+        public void Draw(GraphicsDevice graphicsDevice, RenderContext renderContext, BaseEffect effect)
         {
             Matrix[] boneMatrices = new Matrix[Model.Bones.Count];
 
@@ -43,21 +43,15 @@ namespace ShaderTest.Entities
 
                 var parentTransform = bone.Parent != null ? boneMatrices[bone.Parent.Index] : World;
                 boneMatrices[boneIdx] = bone.Transform * parentTransform;
-                var boneEffect = effect;
 
-                if (boneEffect == null)
+                if (!Materials.TryGetValue(bone.Name, out var material))
                 {
-                    if (!BoneShaders.TryGetValue(bone.Name, out var shaders))
-                    {
-                        shaders = BoneShaders["Default"];
-                    }
-
-                    boneEffect = shaders.CurrentShader;
+                    material = Materials["Default"];
                 }
 
-                boneEffect.ApplyRenderContext(boneMatrices[boneIdx], renderContext);
+                effect.ApplyRenderContext(boneMatrices[boneIdx], renderContext, material);
 
-                DrawBoneWithEffect(graphicsDevice, bone, boneEffect);
+                DrawBoneWithEffect(graphicsDevice, bone, effect);
             }
         }
     }

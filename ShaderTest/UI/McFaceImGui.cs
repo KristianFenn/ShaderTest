@@ -24,6 +24,13 @@ namespace ShaderTest.UI
             return new Color(vec3.X, vec3.Y, vec3.Z, color.A);
         }
 
+        public static void ColorEdit3(string name, ref Color color)
+        {
+            var vec3 = new System.Numerics.Vector3(color.R, color.G, color.B);
+            ImGui.ColorEdit3(name, ref vec3);
+            color = new Color(vec3.X, vec3.Y, vec3.Z, color.A);
+        }
+
         public static float SliderFloat(string name, float value, float min, float max)
         {
             ImGui.SliderFloat(name, ref value, min, max);
@@ -32,21 +39,23 @@ namespace ShaderTest.UI
 
         public static Texture2D TextureCombo(string name, Texture2D texture)
         {
-            var selected = texture;
+            TextureCombo(name, ref texture);
+            return texture;
+        }
 
+        public static void TextureCombo(string name, ref Texture2D texture)
+        {
             if (ImGui.BeginCombo(name, texture?.Name ?? "N/A"))
             {
                 foreach (var tex in _textures)
                 {
-                    if (ImGui.Selectable(tex.Name))
+                    if (ImGui.Selectable(tex.Name, texture == tex))
                     {
-                        selected = tex;
+                        texture = tex;
                     }
                 }
                 ImGui.EndCombo();
             }
-
-            return selected;
         }
     }
 }

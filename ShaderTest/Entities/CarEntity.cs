@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework.Content;
-using ShaderTest.Shaders;
 
 namespace ShaderTest.Entities
 {
@@ -16,54 +15,28 @@ namespace ShaderTest.Entities
                 * Matrix.CreateFromAxisAngle(Vector3.Up, MathHelper.ToRadians(-20f))
                 * Matrix.CreateTranslation(_position);
 
-            BoneShaders.Add("Default", new BoneShaders
+            Materials.Add("Default", new Material
             {
-                ConfiguredShaders =
-                [
-                    new PbrEffect
-                    {
-                        UseTexture = true,
-                        Texture = content.Load<Texture2D>("Models/Car/Car.Color"),
-                        UseRmaMap = true,
-                        RmaMap = content.Load<Texture2D>("Models/Car/Car.RMA"),
-                        UseNormalMap = true,
-                        NormalMap = content.Load<Texture2D>("Models/Car/Car.Normals"),
-                        Roughness = 0.2f,
-                        Metallic = 0.5f,
-                        AmbientOcclusion = 1.0f
-                    },
-                    new BlinnPhongEffect
-                    {
-                        UseTexture = true,
-                        Texture = content.Load<Texture2D>("Models/Car/Car.Color"),
-                        SpecularColor = Color.White,
-                        SpecularPower = 0.8f
-                    }
-                ]
+                UseTexture = true,
+                Texture = content.Load<Texture2D>("Models/Car/Car.Color"),
+                UseRmaMap = true,
+                RmaMap = content.Load<Texture2D>("Models/Car/Car.RMA"),
+                UseNormalMap = true,
+                NormalMap = content.Load<Texture2D>("Models/Car/Car.Normals"),
+                Roughness = 0.2f,
+                Metallic = 0.5f,
+                AmbientOcclusion = 1.0f
             });
 
-            BoneShaders.Add("Wheel.FL", new BoneShaders
+            Materials.Add("Wheel.FL", new Material
             {
-                ConfiguredShaders =
-                [
-                    new PbrEffect
-                    {
-                        UseTexture = true,
-                        Texture = content.Load<Texture2D>("Models/Car/Tyre.Color"),
-                        UseRmaMap = false,
-                        UseNormalMap = false,
-                        Roughness = 0.5f,
-                        Metallic = 0.5f,
-                        AmbientOcclusion = 1.0f
-                    },
-                    new BlinnPhongEffect
-                    {
-                        UseTexture = true,
-                        Texture = content.Load<Texture2D>("Models/Car/Tyre.Color"),
-                        SpecularColor = Color.White,
-                        SpecularPower = 0.1f
-                    }
-                ]
+                UseTexture = true,
+                Texture = content.Load<Texture2D>("Models/Car/Tyre.Color"),
+                UseRmaMap = false,
+                UseNormalMap = false,
+                Roughness = 0.5f,
+                Metallic = 0.5f,
+                AmbientOcclusion = 1.0f
             });
         }
     }

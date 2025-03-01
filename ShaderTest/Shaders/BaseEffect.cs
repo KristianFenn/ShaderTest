@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using ShaderTest.Entities;
+using System.Runtime.CompilerServices;
 
 namespace ShaderTest.Shaders
 {
@@ -9,6 +10,6 @@ namespace ShaderTest.Shaders
             return Parameters[name];
         }
 
-        public abstract void ApplyRenderContext(Matrix world, RenderContext renderContext);
+        public abstract void ApplyRenderContext(Matrix world, RenderContext renderContext, Material material);
     }
 }

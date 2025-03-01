@@ -22,6 +22,11 @@ namespace ShaderTest
         private Sun _sun;
         private List<Updatable> _updatable;
         private UiWindow _uiWindow;
+        private RenderTarget2D _colorMap;
+        private RenderTarget2D _normalMap;
+        private RenderTarget2D _rmaMap;
+        private RenderTarget2D _positionMap;
+        private RenderTargetBinding[] _deferredRenderTargetBindings;
 
         public ShaderTestGame()
         {
@@ -67,6 +72,36 @@ namespace ShaderTest
                 Name = "ShadowMap"
             };
 
+            var vs = GraphicsDevice.Viewport.Bounds.Size;
+
+            _colorMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.Color, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
+            {
+                Name = "ColorMap"
+            };
+
+            _positionMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.HalfVector4, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
+            {
+                Name = "Position Map"
+            };
+
+            _normalMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.HalfVector4, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
+            {
+                Name = "NormalMap"
+            };
+
+            _rmaMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.HalfVector4, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
+            {
+                Name = "RMA Map"
+            };
+
+            _deferredRenderTargetBindings =
+            [
+                new RenderTargetBinding(_colorMap),
+                new RenderTargetBinding(_positionMap),
+                new RenderTargetBinding(_normalMap),
+                new RenderTargetBinding(_rmaMap),
+            ];
+
             var entityFactory = new EntityFactory(Content);
 
             Entities.Add(entityFactory.CreateEntity<GroundEntity>("Ground"));
@@ -94,7 +129,14 @@ namespace ShaderTest
             _uiWindow.AddTab(editor);
 
             var loadedTextures = Content.GetLoaded<Texture2D>();
-            McFaceImGui.Initialise([_shadowMap, .. loadedTextures]);
+            McFaceImGui.Initialise([
+                _colorMap,
+                _positionMap,
+                _normalMap,
+                _rmaMap,
+                _shadowMap,
+                .. loadedTextures
+            ]);
 
             var textureView = new TextureView(_uiWindow.Renderer);
             _uiWindow.AddTab(textureView);
@@ -140,14 +182,22 @@ namespace ShaderTest
                 entity.Draw(GraphicsDevice, renderContext, GameShaders.ShadowMap);
             }
 
-            GraphicsDevice.SetRenderTarget(null);
+            GraphicsDevice.SetRenderTargets(_deferredRenderTargetBindings);
             GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            GraphicsDevice.Clear(Color.Black);
+
+            foreach (var entity in Entities)
+            {
+                entity.Draw(GraphicsDevice, renderContext, GameShaders.Deferred);
+            }
+
+            GraphicsDevice.SetRenderTarget(null);
 
             GraphicsDevice.Clear(Color.Black);
 
             foreach (var entity in Entities)
             {
-                entity.Draw(GraphicsDevice, renderContext);
+                entity.Draw(GraphicsDevice, renderContext, GameShaders.Pbr);
             }
 
             _spriteBatch.Begin();

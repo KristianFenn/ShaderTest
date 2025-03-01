@@ -5,24 +5,6 @@
 /profile:Reach
 /compress:false
 
-#begin Shaders\BlinnPhong.fx
-/importer:EffectImporter
-/processor:EffectProcessor
-/processorParam:Importer=EffectImporter
-/processorParam:Processor=EffectProcessor
-/processorParam:DebugMode=Auto
-/processorParam:Defines=
-/build:Shaders\BlinnPhong.fx
-
-#begin Shaders\BlinnPhongTechniques.fx
-/importer:EffectImporter
-/processor:EffectProcessor
-/processorParam:Importer=EffectImporter
-/processorParam:Processor=EffectProcessor
-/processorParam:DebugMode=Auto
-/processorParam:Defines=
-/build:Shaders\BlinnPhongTechniques.fx
-
 #begin Shaders\Common.fx
 /importer:EffectImporter
 /processor:EffectProcessor
@@ -31,6 +13,15 @@
 /processorParam:DebugMode=Auto
 /processorParam:Defines=
 /build:Shaders\Common.fx
+
+#begin Shaders\DeferredBuffer.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:Importer=EffectImporter
+/processorParam:Processor=EffectProcessor
+/processorParam:DebugMode=Auto
+/processorParam:Defines=
+/build:Shaders\DeferredBuffer.fx
 
 #begin Shaders\Depth.fx
 /importer:EffectImporter

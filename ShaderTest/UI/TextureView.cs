@@ -22,7 +22,11 @@ namespace ShaderTest.UI
                 _refCache.Add(_selectedTexture, textureRef);
             }
 
-            ImGui.Image(textureRef, new System.Numerics.Vector2(400f));
+            var longestDimension = MathF.Max(_selectedTexture.Width, _selectedTexture.Height);
+            var scale = 400f / longestDimension;
+            var size = new System.Numerics.Vector2(_selectedTexture.Width, _selectedTexture.Height);
+
+            ImGui.Image(textureRef, size * scale);
         }
     }
 }
