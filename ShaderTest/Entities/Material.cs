@@ -4,8 +4,8 @@
     {
         public bool UseTexture;
         public Texture2D Texture;
-        public bool UseRmaMap;
-        public Texture2D RmaMap;
+        public bool UsePbrMap;
+        public Texture2D PbrMap;
         public bool UseNormalMap;
         public Texture2D NormalMap;
         public Color Albedo;

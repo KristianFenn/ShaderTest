@@ -17,10 +17,15 @@ namespace ShaderTest.Shaders
             ShadowMap = new ShadowMapEffect(content.Load<Effect>("Shaders/Depth"));
             ShadowMap.CurrentTechnique = ShadowMap.Techniques["RenderDepth"];
             ShadowMap.Name = "Depth";
+
+            PbrDeferred = new PbrDeferredEffect(content.Load<Effect>("Shaders/PbrDeferred"));
+            PbrDeferred.CurrentTechnique = PbrDeferred.Techniques["DrawPbrDeferred"];
+            PbrDeferred.Name = "PBR Deferred";
         }
 
         public static PbrEffect Pbr { get; private set; }
         public static DeferredBufferEffect Deferred { get; private set; }
         public static ShadowMapEffect ShadowMap { get; private set; }
+        public static PbrDeferredEffect PbrDeferred { get; private set; }
     }
 }

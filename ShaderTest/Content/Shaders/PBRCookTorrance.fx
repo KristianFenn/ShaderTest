@@ -1,57 +1,7 @@
 #include "ShadowNoisePcf.fx"
 
-float4x4 ModelToWorld;
-float4x4 ModelToShadowMap;
-float4x4 ModelToView;
-float3x3 ModelToViewNormal;
-float4x4 ModelToScreen;
-
 float3 LightPosition;
 float3 LightColor;
-
-struct VSInput
-{
-    float4 Position : POSITION0;
-    float3 Normal : NORMAL0;
-    float3 Binormal : BINORMAL0;
-    float3 Tangent : TANGENT0;
-    float2 TextureCoords : TEXCOORD0;
-};
-
-struct V2P
-{
-    float4 Position : SV_Position;
-    float2 TextureCoords : TEXCOORD0;
-    float4 ViewPosition : TEXCOORD1;
-    float3 ViewNormal : TEXCOORD2;
-    // 3 slots
-    float3x3 TBN : TEXCOORD3;
-    float4 SMPosition : TEXCOORD6;
-    float4 WorldPosition : TEXCOORD7;
-};
-
-V2P VShader(VSInput input)
-{
-    V2P output;
-    
-    output.WorldPosition = mul(input.Position, ModelToWorld);
-    output.ViewPosition = mul(input.Position, ModelToView);
-    output.Position = mul(input.Position, ModelToScreen);
-    
-    output.SMPosition = mul(input.Position, ModelToShadowMap);
-    output.SMPosition.z = output.SMPosition.z / output.SMPosition.w;
-    
-    output.ViewNormal = mul(input.Normal, ModelToViewNormal);
-    output.TextureCoords = input.TextureCoords;
-    
-    output.TBN = float3x3(
-        normalize(mul(input.Tangent, ModelToViewNormal)),
-        normalize(mul(input.Binormal, ModelToViewNormal)),
-        normalize(mul(input.Normal, ModelToViewNormal))
-    );
-    
-    return output;
-}
 
 /*
     Fresnel function.
@@ -93,12 +43,11 @@ float geometrySchlickGGX(float dp, float roughness)
     return dp / denom;
 }
 
-
-float4 ApplyLightingModel(V2P input, float3 albedo, float roughness, float metallic, float ambientOcclusion, float3 normalVector, float exposure, float gamma)
+float4 ApplyLightingModel(float3 albedo, float roughness, float metallic, float ambientOcclusion, float shadow, float3 normalVector, float3 viewVector, float exposure, float gamma)
 {
     float3 light = normalize(LightPosition);
     float3 normal = normalize(normalVector);
-    float3 view = normalize(-input.ViewPosition.xyz);
+    float3 view = normalize(viewVector);
     float3 halfVector = normalize(view + light);
     
     float lightIncidence = max(dot(normal, light), 0.0f);
@@ -106,13 +55,9 @@ float4 ApplyLightingModel(V2P input, float3 albedo, float roughness, float metal
     float normalDotHalf = max(dot(normal, halfVector), 0.0f);
     float viewDotHalf = max(dot(view, halfVector), 0.0f);
     
-    bool highSample;
-    float shadowScalar = lightIncidence > 0.0f
-        ? CalculateShadowScalar(input.WorldPosition, input.SMPosition, highSample) : 0.0f;
-    
     float3 lightOut = float3(0.0f, 0.0f, 0.0f);
     
-    if (shadowScalar != 0.0f)
+    if (shadow != 1.0f)
     {
         float3 radiance = LightColor;
     
@@ -134,7 +79,7 @@ float4 ApplyLightingModel(V2P input, float3 albedo, float roughness, float metal
         float3 specularBrdf = specularBrdfNumerator / specularBrdfDenominator;
         float3 diffuseBrdf = diffuseAmount * albedo / Pi;
        
-        lightOut = (diffuseBrdf + specularBrdf) * radiance * lightIncidence * shadowScalar;
+        lightOut = (diffuseBrdf + specularBrdf) * radiance * lightIncidence * (1 - shadow);
     }
     
     float3 ambient = float3(0.03f, 0.03f, 0.03f) * albedo * ambientOcclusion;

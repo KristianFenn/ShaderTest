@@ -6,7 +6,7 @@ float Metallic;
 float AmbientOcclusion;
 
 bool UseTexture;
-bool UseRmaMap;
+bool UsePbrMap;
 bool UseNormalMap;
 
 float4x4 ModelToWorld;
@@ -24,10 +24,10 @@ SamplerState TextureSampler = sampler_state
     AddressV = Wrap;
 };
 
-Texture2D<float3> RmaMap;
-SamplerState RmaMapSampler = sampler_state
+Texture2D<float3> PbrMap;
+SamplerState PbrMapSampler = sampler_state
 {
-    Texture = (RmaMap);
+    Texture = (PbrMap);
     Filter = None;
 };
 
@@ -55,14 +55,15 @@ struct V2P
     float3 ViewNormal : TEXCOORD2;
     // 3 slots
     float3x3 TBN : TEXCOORD3;
+    float Depth : TEXCOORD6;
 };
 
 struct PSOutput
 {
     float4 Albedo : COLOR0;
-    float4 Position : COLOR1;
-    float4 Normal : COLOR2;
-    float4 RMA : COLOR3;
+    float4 Normal : COLOR1;
+    float4 Depth : COLOR2;
+    float4 Pbr : COLOR3;
 };
 
 V2P VShader(VSInput input)
@@ -80,6 +81,8 @@ V2P VShader(VSInput input)
         normalize(mul(input.Binormal, ModelToViewNormal)),
         normalize(mul(input.Normal, ModelToViewNormal))
     );
+    
+    output.Depth = output.Position.z / output.Position.w;
     
     return output;
 }
@@ -103,19 +106,20 @@ PSOutput PShader(V2P input)
         output.Normal = float4(normalize(mul(normalSample, input.TBN)), 1.0f);
     }
     
+    output.Depth = input.Depth.rrrr;
+    
     float roughness = Roughness, metallic = Metallic, ao = AmbientOcclusion;
     
-    if (UseRmaMap == true)
+    if (UsePbrMap == true)
     {
-        float3 rma = RmaMap.Sample(RmaMapSampler, input.TextureCoords);
+        float3 rma = PbrMap.Sample(PbrMapSampler, input.TextureCoords);
         roughness = rma.r;
         metallic = rma.g;
         ao = rma.b;
     }
     
-    output.RMA = float4(roughness, metallic, ao, 1.0f);
-    
-    output.Position = float4(normalize(input.ViewPosition.xyz), 1.0f);
+    output.Pbr = float4(roughness, metallic, ao, 1.0f);
+
     
     return output;
 };

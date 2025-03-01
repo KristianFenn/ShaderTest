@@ -41,6 +41,15 @@
 /processorParam:Defines=
 /build:Shaders\PBRCookTorrance.fx
 
+#begin Shaders\PBRDeferred.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:Importer=EffectImporter
+/processorParam:Processor=EffectProcessor
+/processorParam:DebugMode=Auto
+/processorParam:Defines=
+/build:Shaders\PBRDeferred.fx
+
 #begin Shaders\PBRTechniques.fx
 /importer:EffectImporter
 /processor:EffectProcessor

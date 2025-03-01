@@ -18,16 +18,16 @@ namespace ShaderTest.Shaders
             set => GetParameter("TextureSampler+Texture").SetValue(value);
         }
 
-        public bool UseRmaMap
+        public bool UsePbrMap
         {
             get => GetParameter().GetValueBoolean();
             set => GetParameter().SetValue(value);
         }
 
-        public Texture2D RmaMap
+        public Texture2D PbrMap
         {
-            get => GetParameter("RmaMapSampler+RmaMap").GetValueTexture2D();
-            set => GetParameter("RmaMapSampler+RmaMap").SetValue(value);
+            get => GetParameter("PbrMapSampler+PbrMap").GetValueTexture2D();
+            set => GetParameter("PbrMapSampler+PbrMap").SetValue(value);
         }
 
         public bool UseNormalMap
@@ -73,8 +73,8 @@ namespace ShaderTest.Shaders
             Texture = material.Texture;
             UseNormalMap = material.UseNormalMap;
             NormalMap = material.NormalMap;
-            UseRmaMap = material.UseRmaMap;
-            RmaMap = material.RmaMap;
+            UsePbrMap = material.UsePbrMap;
+            PbrMap = material.PbrMap;
             Roughness = material.Roughness;
             Metallic = material.Metallic;
             AmbientOcclusion = material.AmbientOcclusion;

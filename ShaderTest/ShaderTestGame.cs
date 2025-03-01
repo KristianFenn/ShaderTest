@@ -22,11 +22,12 @@ namespace ShaderTest
         private Sun _sun;
         private List<Updatable> _updatable;
         private UiWindow _uiWindow;
-        private RenderTarget2D _colorMap;
+        private RenderTarget2D _albedoMap;
         private RenderTarget2D _normalMap;
-        private RenderTarget2D _rmaMap;
-        private RenderTarget2D _positionMap;
+        private RenderTarget2D _pbrMap;
+        private RenderTarget2D _depthMap;
         private RenderTargetBinding[] _deferredRenderTargetBindings;
+        private VertexBuffer _fullScreenQuad;
 
         public ShaderTestGame()
         {
@@ -37,16 +38,11 @@ namespace ShaderTest
             _graphics.PreferredBackBufferHeight = 1080;
             _graphics.IsFullScreen = false;
             _graphics.HardwareModeSwitch = false;
-            _graphics.PreferMultiSampling = true;
+            _graphics.PreferMultiSampling = false;
             _graphics.SynchronizeWithVerticalRetrace = true;
 
             IsMouseVisible = false;
             IsFixedTimeStep = false;
-
-            _graphics.PreparingDeviceSettings += (object sender, PreparingDeviceSettingsEventArgs e) =>
-            {
-                e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 16;
-            };
         }
 
         protected override void Initialize()
@@ -74,33 +70,47 @@ namespace ShaderTest
 
             var vs = GraphicsDevice.Viewport.Bounds.Size;
 
-            _colorMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.Color, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
+            _albedoMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.Color, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
             {
-                Name = "ColorMap"
-            };
-
-            _positionMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.HalfVector4, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
-            {
-                Name = "Position Map"
+                Name = "Albedo"
             };
 
             _normalMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.HalfVector4, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
             {
-                Name = "NormalMap"
+                Name = "Normal"
             };
 
-            _rmaMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.HalfVector4, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
+            _pbrMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.HalfVector4, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
             {
-                Name = "RMA Map"
+                Name = "PBR"
             };
+
+            _depthMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.Single, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
+            {
+                Name = "Depth"
+            };
+
+            GameShaders.PbrDeferred.AlbedoMap = _albedoMap;
+            GameShaders.PbrDeferred.NormalMap = _normalMap;
+            GameShaders.PbrDeferred.PBRMap = _pbrMap;
+            GameShaders.PbrDeferred.DepthMap = _depthMap;
 
             _deferredRenderTargetBindings =
             [
-                new RenderTargetBinding(_colorMap),
-                new RenderTargetBinding(_positionMap),
+                new RenderTargetBinding(_albedoMap),
                 new RenderTargetBinding(_normalMap),
-                new RenderTargetBinding(_rmaMap),
+                new RenderTargetBinding(_depthMap),
+                new RenderTargetBinding(_pbrMap),
             ];
+
+            _fullScreenQuad = new VertexBuffer(GraphicsDevice, typeof(VertexPositionTexture), 4, BufferUsage.WriteOnly);
+
+            _fullScreenQuad.SetData([
+                new VertexPositionTexture(new Vector3(-1, -1, 0), new Vector2(0, 1)),
+                new VertexPositionTexture(new Vector3(-1, 1, 0), new Vector2(0, 0)),
+                new VertexPositionTexture(new Vector3(1, -1, 0), new Vector2(1, 1)),
+                new VertexPositionTexture(new Vector3(1, 1, 0), new Vector2(1, 0)),
+            ]);
 
             var entityFactory = new EntityFactory(Content);
 
@@ -130,10 +140,9 @@ namespace ShaderTest
 
             var loadedTextures = Content.GetLoaded<Texture2D>();
             McFaceImGui.Initialise([
-                _colorMap,
-                _positionMap,
+                _albedoMap,
                 _normalMap,
-                _rmaMap,
+                _pbrMap,
                 _shadowMap,
                 .. loadedTextures
             ]);
@@ -182,22 +191,39 @@ namespace ShaderTest
                 entity.Draw(GraphicsDevice, renderContext, GameShaders.ShadowMap);
             }
 
-            GraphicsDevice.SetRenderTargets(_deferredRenderTargetBindings);
-            GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-            GraphicsDevice.Clear(Color.Black);
-
-            foreach (var entity in Entities)
+            if (Camera.DrawDeferred)
             {
-                entity.Draw(GraphicsDevice, renderContext, GameShaders.Deferred);
+                GraphicsDevice.SetRenderTargets(_deferredRenderTargetBindings);
+                GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+                GraphicsDevice.BlendState = BlendState.Opaque;
+                GraphicsDevice.Clear(Color.Black);
+
+                foreach (var entity in Entities)
+                {
+                    entity.Draw(GraphicsDevice, renderContext, GameShaders.Deferred);
+                }
+
+                GraphicsDevice.DepthStencilState = DepthStencilState.None;
+                GraphicsDevice.SetRenderTarget(null);
+                GraphicsDevice.Clear(Color.Black);
+
+                GraphicsDevice.SetVertexBuffer(_fullScreenQuad);
+
+                GameShaders.PbrDeferred.ApplyRenderContext(Matrix.Identity, renderContext, default);
+                GameShaders.PbrDeferred.CurrentTechnique.Passes[0].Apply();
+
+                GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
             }
-
-            GraphicsDevice.SetRenderTarget(null);
-
-            GraphicsDevice.Clear(Color.Black);
-
-            foreach (var entity in Entities)
+            else
             {
-                entity.Draw(GraphicsDevice, renderContext, GameShaders.Pbr);
+                GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+                GraphicsDevice.SetRenderTarget(null);
+                GraphicsDevice.Clear(Color.Black);
+
+                foreach (var entity in Entities)
+                {
+                    entity.Draw(GraphicsDevice, renderContext, GameShaders.Pbr);
+                }
             }
 
             _spriteBatch.Begin();

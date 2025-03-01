@@ -16,7 +16,7 @@ namespace ShaderTest.Entities
             {
                 UseTexture = true,
                 Texture = content.Load<Texture2D>("Models/Tent/Tent.Color"),
-                UseRmaMap = false,
+                UsePbrMap = false,
                 UseNormalMap = false,
                 Roughness = 0.5f,
                 Metallic = 0.0f,

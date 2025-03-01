@@ -19,8 +19,8 @@ namespace ShaderTest.Entities
             {
                 UseTexture = true,
                 Texture = content.Load<Texture2D>("Models/Car/Car.Color"),
-                UseRmaMap = true,
-                RmaMap = content.Load<Texture2D>("Models/Car/Car.RMA"),
+                UsePbrMap = true,
+                PbrMap = content.Load<Texture2D>("Models/Car/Car.RMA"),
                 UseNormalMap = true,
                 NormalMap = content.Load<Texture2D>("Models/Car/Car.Normals"),
                 Roughness = 0.2f,
@@ -32,7 +32,7 @@ namespace ShaderTest.Entities
             {
                 UseTexture = true,
                 Texture = content.Load<Texture2D>("Models/Car/Tyre.Color"),
-                UseRmaMap = false,
+                UsePbrMap = false,
                 UseNormalMap = false,
                 Roughness = 0.5f,
                 Metallic = 0.5f,

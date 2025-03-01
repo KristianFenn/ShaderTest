@@ -15,8 +15,8 @@ namespace ShaderTest.Entities
             {
                 UseTexture = true,
                 Texture = content.Load<Texture2D>("Models/Ground/Ground.Color"),
-                UseRmaMap = true,
-                RmaMap = content.Load<Texture2D>("Models/Ground/Ground.RMA"),
+                UsePbrMap = true,
+                PbrMap = content.Load<Texture2D>("Models/Ground/Ground.RMA"),
                 UseNormalMap = true,
                 NormalMap = content.Load<Texture2D>("Models/Ground/Ground.Normals"),
                 Roughness = 1.0f,

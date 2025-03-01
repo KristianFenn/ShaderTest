@@ -48,8 +48,8 @@ namespace ShaderTest.UI
 
                 ImGui.Checkbox("Use texture", ref material.UseTexture);
                 McFaceImGui.TextureCombo("Texture", ref material.Texture);
-                ImGui.Checkbox("Use RMA map", ref material.UseRmaMap);
-                McFaceImGui.TextureCombo("RMA map", ref material.RmaMap);
+                ImGui.Checkbox("Use RMA map", ref material.UsePbrMap);
+                McFaceImGui.TextureCombo("RMA map", ref material.PbrMap);
                 ImGui.Checkbox("Use normal map", ref material.UseNormalMap);
                 McFaceImGui.TextureCombo("Normal map", ref material.NormalMap);
                 McFaceImGui.ColorEdit3("Albedo", ref material.Albedo);
