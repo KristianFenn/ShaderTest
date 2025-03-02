@@ -1,6 +1,8 @@
 #include "PBRCookTorrance.fx"
 
 float4x4 InverseProjection;
+float4x3 InverseView;
+float4x3 ViewToShadowMap;
 float Exposure;
 float Gamma;
 
@@ -8,6 +10,12 @@ Texture2D<float4> AlbedoMap;
 Texture2D<float4> NormalMap;
 Texture2D<float> DepthMap;
 Texture2D<float4> PBRMap;
+
+float NearClip;
+float FarClip;
+
+// todo - probably remove.
+float2 HalfPixel;
 
 SamplerState MapSampler = sampler_state
 {
@@ -37,68 +45,132 @@ PSInput VShader(VSInput input)
     return output;
 }
 
+float3 GetAlbedo(float2 TexCoord)
+{
+    return pow(abs(AlbedoMap.Sample(MapSampler, TexCoord).xyz), 2.2f);
+}
+
+float3 GetNormal(float2 TexCoord)
+{
+    return normalize(2.0f * NormalMap.Sample(MapSampler, TexCoord).xyz - 1.0f);
+}
+
+float GetDepth(float2 TexCoord)
+{
+    return DepthMap.Sample(MapSampler, TexCoord);
+}
+
+float3 GetPbr(float2 TexCoord)
+{
+    return PBRMap.Sample(MapSampler, TexCoord).xyz;
+}
+
+float3 GetViewPos(float2 TexCoord, float Depth)
+{
+    float4 viewPos = mul(float4(TexCoord, Depth, 1.0f), InverseProjection);
+    return viewPos.xyz / viewPos.w;
+}
+
+float3 GetShadowMapPosition(float3 viewPos)
+{
+    return mul(float4(viewPos, 1.0f), ViewToShadowMap);
+}
+
+float3 GetWorldPos(float3 viewPos)
+{
+    return mul(float4(viewPos, 1.0f), InverseView);
+}
+
 float4 PShaderDrawPbrDeferred(PSInput input) : COLOR
 {
-    float3 albedo = pow(abs(AlbedoMap.Sample(MapSampler, input.TexCoord).xyz), 2.2f);
-    float3 normal = NormalMap.Sample(MapSampler, input.TexCoord).xyz;
-    float depth = DepthMap.Sample(MapSampler, input.TexCoord);
-    float3 pbr = PBRMap.Sample(MapSampler, input.TexCoord).xyz;
+    float3 albedo = GetAlbedo(input.TexCoord);
+    float3 normal = GetNormal(input.TexCoord);
+    float depth = GetDepth(input.TexCoord);
+    float3 pbr = GetPbr(input.TexCoord);
+    float3 viewPos = GetViewPos(input.TexCoord, depth);
     
-    float4 viewPosH = mul(float4(input.TexCoord.xy, depth, 1.0f), InverseProjection);
-    float3 viewPos = viewPosH.xyz / viewPosH.w;
+    float3 light = normalize(LightPosition);
+    float lightIncidence = max(dot(normal, light), 0.0f);
+    float3 shadowMapPos = GetShadowMapPosition(viewPos);
     
-    return ApplyLightingModel(albedo, pbr.r, pbr.g, pbr.b, 0.0f, normal.xyz, -viewPos, Exposure, Gamma);
+    bool highSample;
+    float shadow = lightIncidence > 0.0f
+        ? CalculateShadow(shadowMapPos, highSample) : 0.0f;
+    
+    return ApplyLightingModel(albedo, pbr.r, pbr.g, pbr.b, shadow, normal, -viewPos, Exposure, Gamma);
 }
 
 float4 PShaderDrawAlbedoDeferred(PSInput input) : COLOR
 {
-    float3 albedo = AlbedoMap.Sample(MapSampler, input.TexCoord).xyz;
-    
-    return float4(albedo, 1.0f);
+    return float4(GetAlbedo(input.TexCoord), 1.0f);
 }
 
 float4 PShaderDrawNormalDeferred(PSInput input) : COLOR
 {
-    float3 normal = normalize(NormalMap.Sample(MapSampler, input.TexCoord).xyz);
-    
-    return float4(normal, 1.0f);
+    return float4(GetNormal(input.TexCoord), 1.0f);
 }
 
 float4 PShaderDrawDepthDeferred(PSInput input) : COLOR
 {
-    float depth = DepthMap.Sample(MapSampler, input.TexCoord);
-    
-    return float4(depth.rrr, 1.0f);
+    return float4(GetDepth(input.TexCoord).rrr, 1.0f);
 }
 
 float4 PShaderDrawPbrMapDeferred(PSInput input) : COLOR
 {
-    float3 pbr = PBRMap.Sample(MapSampler, input.TexCoord).xyz;
-    
-    return float4(pbr.rgb, 1.0f);
+    return float4(GetPbr(input.TexCoord), 1.0f);
 }
 
 float4 PShaderDrawPosDeferred(PSInput input) : COLOR
 {
-    float depth = DepthMap.Sample(MapSampler, input.TexCoord);
-        
-    float4 viewPosH = mul(float4(input.TexCoord.xy, depth, 1.0f), InverseProjection);
-    float3 viewPos = viewPosH.xyz / viewPosH.w;
+    float depth = GetDepth(input.TexCoord);
+    float3 viewPos = GetViewPos(input.TexCoord, depth);
     
-    return float4(normalize(viewPos), 1.0f);
+    float4 col = float4(frac(viewPos), 1.0f);
+    
+    if (viewPos.x > -0.1f && viewPos.x < 0.1f)
+    {
+        col.rgb = 1.0f;
+    }
+    
+    if (viewPos.y > -0.1f && viewPos.y < 0.1f)
+    {
+        col.rgb = 1.0f;
+    }
+    
+    return col;
 }
 
 float4 PShaderDrawTexDepthDeferred(PSInput input) : COLOR
 {
-    float depth = DepthMap.Sample(MapSampler, input.TexCoord);
-    float4 tex_depth = float4(input.TexCoord.xy, depth, 1.0f);    
+    float depth = GetDepth(input.TexCoord);
+    float4 tex_depth = float4(input.TexCoord, depth, 1.0f);    
     return tex_depth;
 }
 
-TECHNIQUE(DrawPbrDeferred, VShader, PShaderDrawPbrDeferred);
-TECHNIQUE(DrawAlbedoDeferred, VShader, PShaderDrawAlbedoDeferred);
-TECHNIQUE(DrawNormalDeferred, VShader, PShaderDrawNormalDeferred);
-TECHNIQUE(DrawDepthDeferred, VShader, PShaderDrawDepthDeferred);
-TECHNIQUE(DrawPbrMapDeferred, VShader, PShaderDrawPbrMapDeferred);
-TECHNIQUE(DrawPosDeferred, VShader, PShaderDrawPosDeferred);
+float4 PShaderDrawSMPosition(PSInput input) : COLOR
+{
+    float depth = GetDepth(input.TexCoord);
+    float3 viewPos = GetViewPos(input.TexCoord, depth);
+    float3 shadowMapPos = GetShadowMapPosition(viewPos);
+    
+    return float4(shadowMapPos, 1.0f);
+}
+
+float4 PShaderWorldPos(PSInput input) : COLOR
+{
+    float depth = GetDepth(input.TexCoord);
+    float3 viewPos = GetViewPos(input.TexCoord, depth);
+    float3 worldPos = GetWorldPos(viewPos);
+    
+    return float4(frac(worldPos), 1.0f);
+}
+
+TECHNIQUE(Draw, VShader, PShaderDrawPbrDeferred);
+TECHNIQUE(DrawAlbedo, VShader, PShaderDrawAlbedoDeferred);
+TECHNIQUE(DrawNormal, VShader, PShaderDrawNormalDeferred);
+TECHNIQUE(DrawDepth, VShader, PShaderDrawDepthDeferred);
+TECHNIQUE(DrawPbr, VShader, PShaderDrawPbrMapDeferred);
+TECHNIQUE(DrawPos, VShader, PShaderDrawPosDeferred);
 TECHNIQUE(DrawTexDepth, VShader, PShaderDrawTexDepthDeferred);
+TECHNIQUE(DrawSMPosition, VShader, PShaderDrawSMPosition);
+TECHNIQUE(DrawWorldPos, VShader, PShaderWorldPos);

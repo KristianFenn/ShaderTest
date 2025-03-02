@@ -7,7 +7,7 @@ namespace ShaderTest.Shaders
         public static void Initialise(ContentManager content)
         {
             Pbr = new PbrEffect(content.Load<Effect>("Shaders/PBRTechniques"));
-            Pbr.CurrentTechnique = Pbr.Techniques["DrawPBR"];
+            Pbr.CurrentTechnique = Pbr.Techniques["DrawPos"];
             Pbr.Name = "PBR";
 
             Deferred = new DeferredBufferEffect(content.Load<Effect>("Shaders/DeferredBuffer"));
@@ -19,7 +19,7 @@ namespace ShaderTest.Shaders
             ShadowMap.Name = "Depth";
 
             PbrDeferred = new PbrDeferredEffect(content.Load<Effect>("Shaders/PbrDeferred"));
-            PbrDeferred.CurrentTechnique = PbrDeferred.Techniques["DrawPbrDeferred"];
+            PbrDeferred.CurrentTechnique = PbrDeferred.Techniques["DrawPos"];
             PbrDeferred.Name = "PBR Deferred";
         }
 

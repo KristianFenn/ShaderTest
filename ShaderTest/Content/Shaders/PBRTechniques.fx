@@ -61,6 +61,7 @@ struct V2P
     float3x3 TBN : TEXCOORD3;
     float4 SMPosition : TEXCOORD6;
     float4 WorldPosition : TEXCOORD7;
+    float2 Depth : TEXCOORD8;
 };
 
 V2P VShader(VSInput input)
@@ -76,6 +77,8 @@ V2P VShader(VSInput input)
     
     output.ViewNormal = mul(input.Normal, ModelToViewNormal);
     output.TextureCoords = input.TextureCoords;
+    
+    output.Depth.xy = output.Position.zw;
     
     output.TBN = float3x3(
         normalize(mul(input.Tangent, ModelToViewNormal)),
@@ -121,7 +124,7 @@ float4 PShaderDrawPBR(V2P input) : COLOR
     
     bool highSample;
     float shadow = lightIncidence > 0.0f
-        ? CalculateShadow(input.SMPosition, highSample) : 0.0f;
+        ? CalculateShadow(input.SMPosition.xyz, highSample) : 0.0f;
 
     return ApplyLightingModel(albedo, roughness, metallic, ao, shadow, normal, -input.ViewPosition.xyz, Exposure, Gamma);
 }
@@ -140,10 +143,73 @@ float4 PShaderDrawNormals(V2P input) : COLOR
 }
 
 float4 PShaderDrawPos(V2P input) : COLOR
-{    
-    return float4(normalize(input.ViewPosition.xyz), 1.0f);
+{
+    float4 col = float4(frac(input.ViewPosition.xyz), 1.0f);
+    
+    if (input.ViewPosition.x > -0.1f && input.ViewPosition.x < 0.1f)
+    {
+        col.rgb = 1.0f;
+    }
+    
+    if (input.ViewPosition.y > -0.1f && input.ViewPosition.y < 0.1f)
+    {
+        col.rgb = 1.0f;
+    }
+    
+    return col;
 }
 
-TECHNIQUE(DrawPBR, VShader, PShaderDrawPBR);
-TECHNIQUE(DrawNormals, VShader, PShaderDrawNormals);
+float4 PShaderDrawSMPosition(V2P input) : COLOR
+{
+    return float4(input.SMPosition.xyz, 1.0f);
+}
+
+float4 PShaderDrawWorldPosition(V2P input) : COLOR
+{
+    return float4(frac(input.WorldPosition.xyz), 1.0f);
+}
+
+float4 PShaderDrawAlbedo(V2P input) : COLOR
+{
+    float3 albedo = Albedo;
+    
+    if (UseTexture == true)
+    {
+        albedo = Texture.Sample(TextureSampler, input.TextureCoords);
+    }
+    
+    // Move from gamma-corrected space to linear colour space.
+    albedo = pow(abs(albedo), 2.2f);
+    
+    return float4(albedo, 1.0f);
+}
+
+float4 PShaderDrawDepth(V2P input) : COLOR
+{
+    float depth = input.Depth.x / input.Depth.y;
+    return float4(depth.rrr, 1.0f);
+}
+
+float4 PShaderDrawPbr(V2P input) : COLOR
+{
+    float roughness = Roughness, metallic = Metallic, ao = AmbientOcclusion;
+    
+    if (UsePbrMap == true)
+    {
+        float3 pbr = PbrMap.Sample(PbrMapSampler, input.TextureCoords);
+        roughness = pbr.r;
+        metallic = pbr.g;
+        ao = pbr.b;
+    }
+    
+    return float4(roughness, metallic, ao, 1.0f);
+}
+
+TECHNIQUE(Draw, VShader, PShaderDrawPBR);
+TECHNIQUE(DrawAlbedo, VShader, PShaderDrawAlbedo);
+TECHNIQUE(DrawNormal, VShader, PShaderDrawNormals);
+TECHNIQUE(DrawDepth, VShader, PShaderDrawDepth);
+TECHNIQUE(DrawPbr, VShader, PShaderDrawPbr);
 TECHNIQUE(DrawPos, VShader, PShaderDrawPos);
+TECHNIQUE(DrawSMPosition, VShader, PShaderDrawSMPosition);
+TECHNIQUE(DrawWorldPos, VShader, PShaderDrawWorldPosition);

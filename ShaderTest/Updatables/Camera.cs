@@ -20,14 +20,16 @@ namespace ShaderTest.Updatables
         public float Exposure => _exposure;
         public string Name => "Camera";
         public bool DrawDeferred => _drawDeferred;
+        public float NearClip => 0.1f;
+        public float FarClip => 200f;
 
         public Camera(ShaderTestGame game) : base(game)
         {
             View = Matrix.Identity;
             Projection = Matrix.Identity;
 
-            _cameraDir = new Vector3(3);
-            _cameraDir = Vector3.Forward;
+            Position = new Vector3(10);
+            _cameraDir = Vector3.Normalize(-Position);
         }
 
         public override void Update(GameTime gameTime)
@@ -75,7 +77,7 @@ namespace ShaderTest.Updatables
             }
 
             View = Matrix.CreateLookAt(Position, Position + _cameraDir, Vector3.Up);
-            Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(_fov), Game.GraphicsDevice.Viewport.AspectRatio, 0.1f, 200f);
+            Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(_fov), Game.GraphicsDevice.Viewport.AspectRatio, NearClip, FarClip);
         }
 
         public void RenderUi()

@@ -84,6 +84,9 @@ namespace ShaderTest.Shaders
             Parameters["ModelToView"].SetValue(modelToView);
             Parameters["ModelToViewNormal"].SetValue(McFaceMatrix.CalculateNormalMatrix(modelToView));
             Parameters["ModelToScreen"].SetValue(modelToView * renderContext.Projection);
+
+            Parameters["NearClip"]?.SetValue(renderContext.NearClip);
+            Parameters["FarClip"]?.SetValue(renderContext.FarClip);
         }
     }
 }

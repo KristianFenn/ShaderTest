@@ -14,6 +14,9 @@ float4x4 ModelToView;
 float3x3 ModelToViewNormal;
 float4x4 ModelToScreen;
 
+float NearClip;
+float FarClip;
+
 Texture2D<float3> Texture;
 SamplerState TextureSampler = sampler_state
 {
@@ -55,15 +58,15 @@ struct V2P
     float3 ViewNormal : TEXCOORD2;
     // 3 slots
     float3x3 TBN : TEXCOORD3;
-    float Depth : TEXCOORD6;
+    float2 Depth : TEXCOORD6;
 };
 
 struct PSOutput
 {
-    float4 Albedo : COLOR0;
-    float4 Normal : COLOR1;
-    float4 Depth : COLOR2;
-    float4 Pbr : COLOR3;
+    half4 Albedo : COLOR0;
+    half4 Normal : COLOR1;
+    half4 Depth : COLOR2;
+    half4 Pbr : COLOR3;
 };
 
 V2P VShader(VSInput input)
@@ -82,7 +85,7 @@ V2P VShader(VSInput input)
         normalize(mul(input.Normal, ModelToViewNormal))
     );
     
-    output.Depth = output.Position.z / output.Position.w;
+    output.Depth.xy = output.Position.zw;
     
     return output;
 }
@@ -98,15 +101,17 @@ PSOutput PShader(V2P input)
         output.Albedo = float4(Texture.Sample(TextureSampler, input.TextureCoords), 1.0f);
     }
     
-    output.Normal = float4(input.ViewNormal, 1.0f);
+    float3 normal = normalize(input.ViewNormal);
     
     if (UseNormalMap == true)
     {
         float3 normalSample = mad(NormalMap.Sample(NormalMapSampler, input.TextureCoords), 2.0f, -1.0f);
-        output.Normal = float4(normalize(mul(normalSample, input.TBN)), 1.0f);
+        normal = normalize(mul(normalSample, input.TBN));
     }
     
-    output.Depth = input.Depth.rrrr;
+    output.Normal = float4(0.5f * (normal + 1.0f), 1.0f);
+    
+    output.Depth = input.Depth.x / input.Depth.y;
     
     float roughness = Roughness, metallic = Metallic, ao = AmbientOcclusion;
     
@@ -119,9 +124,26 @@ PSOutput PShader(V2P input)
     }
     
     output.Pbr = float4(roughness, metallic, ao, 1.0f);
-
     
     return output;
 };
 
+float4 VShaderClear(float4 position : POSITION0) : POSITION0
+{
+    return position;
+}
+
+PSOutput PShaderClear(float4 position : POSITION0)
+{
+    PSOutput output;
+    
+    output.Albedo = 0.0f;
+    output.Normal = 0.0f;
+    output.Depth = 1.0f;
+    output.Pbr = 0.0f;
+    
+    return output;
+}
+
+TECHNIQUE(ClearDeferredBuffers, VShaderClear, PShaderClear);
 TECHNIQUE(DrawDeferredBuffers, VShader, PShader);

@@ -62,6 +62,10 @@ namespace ShaderTest
 
             GameShaders.Initialise(Content);
 
+            Camera = new Camera(this);
+            _updatable.Add(Camera);
+            _uiWindow.AddTab(Camera);
+
             _arial = Content.Load<SpriteFont>("Arial");
             _shadowMap = new RenderTarget2D(GraphicsDevice, 4096, 4096, false, SurfaceFormat.Single, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
             {
@@ -75,12 +79,12 @@ namespace ShaderTest
                 Name = "Albedo"
             };
 
-            _normalMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.HalfVector4, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
+            _normalMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.Color, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
             {
                 Name = "Normal"
             };
 
-            _pbrMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.HalfVector4, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
+            _pbrMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.Color, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
             {
                 Name = "PBR"
             };
@@ -89,6 +93,9 @@ namespace ShaderTest
             {
                 Name = "Depth"
             };
+
+            GameShaders.Pbr.ShadowMap = _shadowMap;
+            GameShaders.PbrDeferred.ShadowMap = _shadowMap;
 
             GameShaders.PbrDeferred.AlbedoMap = _albedoMap;
             GameShaders.PbrDeferred.NormalMap = _normalMap;
@@ -123,10 +130,6 @@ namespace ShaderTest
             _updatable.Add(_sun);
             _uiWindow.AddTab(_sun);
 
-            Camera = new Camera(this);
-            _updatable.Add(Camera);
-            _uiWindow.AddTab(Camera);
-
             Mouse = new MouseInputHandler(this);
             _updatable.Add(Mouse);
 
@@ -142,6 +145,7 @@ namespace ShaderTest
             McFaceImGui.Initialise([
                 _albedoMap,
                 _normalMap,
+                _depthMap,
                 _pbrMap,
                 _shadowMap,
                 .. loadedTextures
@@ -182,7 +186,7 @@ namespace ShaderTest
             GraphicsDevice.SetRenderTarget(_shadowMap);
             GraphicsDevice.Clear(Color.White);
 
-            var renderContext = new RenderContext(Camera.View, Camera.Projection, Camera.Position, Camera.Gamma, Camera.Exposure, _sun.View, _sun.Projection, _sun.Position, _sun.SunColor, _shadowMap);
+            var renderContext = new RenderContext(Camera, _sun);
 
             foreach (var entity in Entities)
             {
@@ -191,20 +195,30 @@ namespace ShaderTest
                 entity.Draw(GraphicsDevice, renderContext, GameShaders.ShadowMap);
             }
 
+            GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+
             if (Camera.DrawDeferred)
             {
                 GraphicsDevice.SetRenderTargets(_deferredRenderTargetBindings);
-                GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+                GraphicsDevice.Clear(ClearOptions.DepthBuffer, Color.Black, GraphicsDevice.Viewport.MaxDepth, 0);
                 GraphicsDevice.BlendState = BlendState.Opaque;
-                GraphicsDevice.Clear(Color.Black);
+                GraphicsDevice.DepthStencilState = DepthStencilState.None;
+                GraphicsDevice.SetVertexBuffer(_fullScreenQuad);
+
+                GameShaders.Deferred.CurrentTechnique = GameShaders.Deferred.Techniques["ClearDeferredBuffers"];
+                GameShaders.Deferred.CurrentTechnique.Passes[0].Apply();
+                GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+
+                GameShaders.Deferred.CurrentTechnique = GameShaders.Deferred.Techniques["DrawDeferredBuffers"];
+                GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
                 foreach (var entity in Entities)
                 {
                     entity.Draw(GraphicsDevice, renderContext, GameShaders.Deferred);
                 }
 
-                GraphicsDevice.DepthStencilState = DepthStencilState.None;
                 GraphicsDevice.SetRenderTarget(null);
+                GraphicsDevice.DepthStencilState = DepthStencilState.None;
                 GraphicsDevice.Clear(Color.Black);
 
                 GraphicsDevice.SetVertexBuffer(_fullScreenQuad);
@@ -216,7 +230,6 @@ namespace ShaderTest
             }
             else
             {
-                GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
                 GraphicsDevice.SetRenderTarget(null);
                 GraphicsDevice.Clear(Color.Black);
 

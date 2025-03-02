@@ -66,6 +66,12 @@ namespace ShaderTest.Shaders
             set => GetParameter().SetValue(value);
         }
 
+        public Texture2D ShadowMap
+        {
+            get => GetParameter("ShadowMapSampler+ShadowMap").GetValueTexture2D();
+            set => GetParameter("ShadowMapSampler+ShadowMap").SetValue(value);
+        }
+
         public override void ApplyRenderContext(Matrix world, RenderContext renderContext, Material material)
         {
             UseTexture = material.UseTexture;
@@ -85,7 +91,6 @@ namespace ShaderTest.Shaders
             Parameters["ModelToScreen"].SetValue(modelToView * renderContext.Projection);
             Parameters["LightPosition"].SetValue(renderContext.LightPosition);
             Parameters["LightColor"].SetValue(renderContext.LightColor);
-            Parameters["ShadowMapSampler+ShadowMap"]?.SetValue(renderContext.ShadowMap);
             Parameters["ModelToShadowMap"]?.SetValue(world * renderContext.WorldToLight * McFaceMatrix.LightToShadowMap);
 
             Parameters["Gamma"].SetValue(renderContext.Gamma);
