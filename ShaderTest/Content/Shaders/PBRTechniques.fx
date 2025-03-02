@@ -124,7 +124,7 @@ float4 PShaderDrawPBR(V2P input) : COLOR
     
     bool highSample;
     float shadow = lightIncidence > 0.0f
-        ? CalculateShadow(input.SMPosition.xyz, highSample) : 0.0f;
+        ? CalculateShadow(input.WorldPosition.xyz, input.SMPosition.xyz, highSample) : 0.0f;
 
     return ApplyLightingModel(albedo, roughness, metallic, ao, shadow, normal, -input.ViewPosition.xyz, Exposure, Gamma);
 }

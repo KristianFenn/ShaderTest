@@ -63,10 +63,10 @@ struct V2P
 
 struct PSOutput
 {
-    half4 Albedo : COLOR0;
-    half4 Normal : COLOR1;
-    half4 Depth : COLOR2;
-    half4 Pbr : COLOR3;
+    float4 Albedo : COLOR0;
+    float4 Normal : COLOR1;
+    float4 Depth : COLOR2;
+    float4 Pbr : COLOR3;
 };
 
 V2P VShader(VSInput input)

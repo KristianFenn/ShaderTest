@@ -88,6 +88,7 @@ float4 PShaderDrawPbrDeferred(PSInput input) : COLOR
     float depth = GetDepth(input.TexCoord);
     float3 pbr = GetPbr(input.TexCoord);
     float3 viewPos = GetViewPos(input.TexCoord, depth);
+    float3 worldPos = GetWorldPos(viewPos);
     
     float3 light = normalize(LightPosition);
     float lightIncidence = max(dot(normal, light), 0.0f);
@@ -95,7 +96,7 @@ float4 PShaderDrawPbrDeferred(PSInput input) : COLOR
     
     bool highSample;
     float shadow = lightIncidence > 0.0f
-        ? CalculateShadow(shadowMapPos, highSample) : 0.0f;
+        ? CalculateShadow(worldPos, shadowMapPos, highSample) : 0.0f;
     
     return ApplyLightingModel(albedo, pbr.r, pbr.g, pbr.b, shadow, normal, -viewPos, Exposure, Gamma);
 }

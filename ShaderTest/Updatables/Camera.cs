@@ -11,7 +11,7 @@ namespace ShaderTest.Updatables
         private float _exposure = 1.0f;
         private float _fov = 60f;
         private Vector3 _cameraDir;
-        private bool _drawDeferred;
+        private bool _drawDeferred = true;
 
         public Matrix View { get; private set; }
         public Matrix Projection { get; private set; }

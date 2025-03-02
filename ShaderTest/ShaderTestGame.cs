@@ -79,7 +79,7 @@ namespace ShaderTest
                 Name = "Albedo"
             };
 
-            _normalMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.Color, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
+            _normalMap = new RenderTarget2D(GraphicsDevice, vs.X, vs.Y, false, SurfaceFormat.HalfVector4, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
             {
                 Name = "Normal"
             };
