@@ -10,14 +10,12 @@ namespace ShaderTest.Updatables
         public Matrix View { get; private set; } = Matrix.Identity;
         public Matrix Projection { get; private set; } = Matrix.CreateOrthographic(48, 48, 0.1f, 200f);
 
-        public string Name => "Light";
-
         private const float MinutesPerDay = 1440f;
 
         private bool _runDayCycle = true;
         private float _timeOfDay = MinutesPerDay / 2;
         private float _dayLengthSeconds = 300f;
-        private Vector3 _midnightPos = new(0, -50, 0);
+        private Vector3 _midnightPos = new(0, -50f, 0);
         private System.Numerics.Vector3 _sunColor = new(0.978f, 0.888f, 0.866f);
         private float _sunBrightness = 24f;
 
@@ -38,6 +36,7 @@ namespace ShaderTest.Updatables
             View = Matrix.CreateLookAt(Position, Vector3.Zero, Vector3.Up);
         }
 
+        public string UiSectionName => "Light";
         public void RenderUi()
         {
             ImGui.ColorEdit3("Sun colour", ref _sunColor);

@@ -6,26 +6,41 @@ namespace ShaderTest.Shaders
     {
         public static void Initialise(ContentManager content)
         {
-            Pbr = new PbrEffect(content.Load<Effect>("Shaders/PBRTechniques"));
+            Pbr = new PbrEffect(content.Load<Effect>("Shaders/PBRTechniques"))
+            {
+                Name = "PBR"
+            };
             Pbr.CurrentTechnique = Pbr.Techniques["Draw"];
-            Pbr.Name = "PBR";
 
-            Deferred = new DeferredBufferEffect(content.Load<Effect>("Shaders/DeferredBuffer"));
+            Deferred = new DeferredBufferEffect(content.Load<Effect>("Shaders/DeferredBuffer"))
+            {
+                Name = "Deferred"
+            };
             Deferred.CurrentTechnique = Deferred.Techniques["DrawDeferredBuffers"];
-            Deferred.Name = "Deferred";
 
-            ShadowMap = new ShadowMapEffect(content.Load<Effect>("Shaders/Depth"));
+            ShadowMap = new ShadowMapEffect(content.Load<Effect>("Shaders/Depth"))
+            {
+                Name = "Depth"
+            };
             ShadowMap.CurrentTechnique = ShadowMap.Techniques["RenderDepth"];
-            ShadowMap.Name = "Depth";
 
-            PbrDeferred = new PbrDeferredEffect(content.Load<Effect>("Shaders/PbrDeferred"));
+            PbrDeferred = new PbrDeferredEffect(content.Load<Effect>("Shaders/PbrDeferred"))
+            {
+                Name = "PBR Deferred"
+            };
             PbrDeferred.CurrentTechnique = PbrDeferred.Techniques["Draw"];
-            PbrDeferred.Name = "PBR Deferred";
+
+            Atmosphere = new AtmosphereEffect(content.Load<Effect>("Shaders/Atmosphere"))
+            {
+                Name = "Atmosphere"
+            };
+            Atmosphere.CurrentTechnique = Atmosphere.Techniques["Draw"];
         }
 
         public static PbrEffect Pbr { get; private set; }
         public static DeferredBufferEffect Deferred { get; private set; }
         public static ShadowMapEffect ShadowMap { get; private set; }
         public static PbrDeferredEffect PbrDeferred { get; private set; }
+        public static AtmosphereEffect Atmosphere { get; private set; }
     }
 }

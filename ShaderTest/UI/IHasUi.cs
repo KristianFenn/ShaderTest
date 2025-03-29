@@ -2,7 +2,7 @@
 {
     public interface IHasUi
     {
-        string Name { get; }
+        string UiSectionName { get; }
         void RenderUi();
     }
 }

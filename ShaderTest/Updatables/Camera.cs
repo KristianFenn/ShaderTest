@@ -11,15 +11,13 @@ namespace ShaderTest.Updatables
         private float _exposure = 1.0f;
         private float _fov = 60f;
         private Vector3 _cameraDir;
-        private bool _drawDeferred = true;
 
         public Matrix View { get; private set; }
         public Matrix Projection { get; private set; }
         public Vector3 Position { get; private set; }
         public float Gamma => _gamma;
         public float Exposure => _exposure;
-        public string Name => "Camera";
-        public bool DrawDeferred => _drawDeferred;
+        public string UiSectionName => "Camera";
         public float NearClip => 0.1f;
         public float FarClip => 200f;
 
@@ -85,31 +83,6 @@ namespace ShaderTest.Updatables
             ImGui.SliderFloat("Field of view", ref _fov, 10f, 120f);
             ImGui.SliderFloat("Gamma", ref _gamma, 1.0f, 5.0f);
             ImGui.SliderFloat("Exposure", ref _exposure, 0.1f, 10f);
-            
-            if (ImGui.CollapsingHeader("Shader"))
-            {
-                ImGui.Checkbox("Deferred", ref _drawDeferred);
-
-                BaseEffect effect = GameShaders.Pbr;
-
-                if (_drawDeferred)
-                {
-                    effect = GameShaders.PbrDeferred;
-                }
-
-                if (ImGui.BeginCombo("Technique", effect.CurrentTechnique.Name))
-                {
-                    foreach (var technique in effect.Techniques)
-                    {
-                        if (ImGui.Selectable(technique.Name, effect.CurrentTechnique == technique))
-                        {
-                            effect.CurrentTechnique = technique;
-                        }
-                    }
-                    ImGui.EndCombo();
-                }
-
-            }
         }
     }
 }

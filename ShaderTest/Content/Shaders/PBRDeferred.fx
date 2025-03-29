@@ -14,14 +14,10 @@ Texture2D<float4> PBRMap;
 float NearClip;
 float FarClip;
 
-// todo - probably remove.
-float2 HalfPixel;
-
 SamplerState MapSampler = sampler_state
 {
     Filter = None;
 };
-
 
 struct VSInput
 {
@@ -33,6 +29,12 @@ struct PSInput
 {
     float4 Position : SV_Position;
     float2 TexCoord : TEXCOORD0;
+};
+
+struct PSOutput
+{
+    float4 Color : COLOR0;
+    float Depth : DEPTH0;
 };
     
 PSInput VShader(VSInput input)
@@ -81,10 +83,12 @@ float3 GetWorldPos(float3 viewPos)
     return mul(float4(viewPos, 1.0f), InverseView);
 }
 
-float4 PShaderDrawPbrDeferred(PSInput input) : COLOR
+PSOutput PShaderDrawPbrDeferred(PSInput input)
 {
+    PSOutput output;
+    
     float3 albedo = GetAlbedo(input.TexCoord);
-    float3 normal = GetNormal(input.TexCoord);
+    float3 normal = GetNormal(input.TexCoord);    
     float depth = GetDepth(input.TexCoord);
     float3 pbr = GetPbr(input.TexCoord);
     float3 viewPos = GetViewPos(input.TexCoord, depth);
@@ -98,7 +102,10 @@ float4 PShaderDrawPbrDeferred(PSInput input) : COLOR
     float shadow = lightIncidence > 0.0f
         ? CalculateShadow(worldPos, shadowMapPos, highSample) : 0.0f;
     
-    return ApplyLightingModel(albedo, pbr.r, pbr.g, pbr.b, shadow, normal, -viewPos, Exposure, Gamma);
+    output.Color = ApplyLightingModel(albedo, pbr.r, pbr.g, pbr.b, shadow, normal, -viewPos, Exposure, Gamma);
+    output.Depth = depth;
+    
+    return output;
 }
 
 float4 PShaderDrawAlbedoDeferred(PSInput input) : COLOR
@@ -109,6 +116,14 @@ float4 PShaderDrawAlbedoDeferred(PSInput input) : COLOR
 float4 PShaderDrawNormalDeferred(PSInput input) : COLOR
 {
     return float4(GetNormal(input.TexCoord), 1.0f);
+}
+
+float4 PShaderDrawNormalRecreated(PSInput input) : COLOR
+{
+    float3 normal;
+    normal.xy = 2.0f * NormalMap.Sample(MapSampler, input.TexCoord).xy - 1.0f;
+    normal.z = sqrt(1 - dot(normal.xy, normal.yx));
+    return float4(normal, 1.0f);
 }
 
 float4 PShaderDrawDepthDeferred(PSInput input) : COLOR
@@ -166,12 +181,19 @@ float4 PShaderWorldPos(PSInput input) : COLOR
     return float4(frac(worldPos), 1.0f);
 }
 
+float4 PShaderPosition(PSInput input) : COLOR
+{
+    return float4(frac(input.Position.xy), 0.0f, 1.0f);
+}
+
 TECHNIQUE(Draw, VShader, PShaderDrawPbrDeferred);
 TECHNIQUE(DrawAlbedo, VShader, PShaderDrawAlbedoDeferred);
 TECHNIQUE(DrawNormal, VShader, PShaderDrawNormalDeferred);
+TECHNIQUE(DrawNormalRecreated, VShader, PShaderDrawNormalDeferred);
 TECHNIQUE(DrawDepth, VShader, PShaderDrawDepthDeferred);
 TECHNIQUE(DrawPbr, VShader, PShaderDrawPbrMapDeferred);
 TECHNIQUE(DrawPos, VShader, PShaderDrawPosDeferred);
 TECHNIQUE(DrawTexDepth, VShader, PShaderDrawTexDepthDeferred);
 TECHNIQUE(DrawSMPosition, VShader, PShaderDrawSMPosition);
 TECHNIQUE(DrawWorldPos, VShader, PShaderWorldPos);
+TECHNIQUE(DrawScreenPos, VShader, PShaderPosition);

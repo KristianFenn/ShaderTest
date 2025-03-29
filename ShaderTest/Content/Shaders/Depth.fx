@@ -25,7 +25,7 @@ V2PDepth VSDepthMap(VSInputDepth input)
 
 float4 PSDepthMap(V2PDepth input) : COLOR
 {
-    return float4(input.Depth, 0, 0, 1);
+    return float4(input.Depth - 0.0001, 0, 0, 1);
 }
 
 TECHNIQUE(RenderDepth, VSDepthMap, PSDepthMap);

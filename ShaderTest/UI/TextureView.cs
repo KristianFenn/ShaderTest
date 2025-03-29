@@ -8,7 +8,7 @@ namespace ShaderTest.UI
         private static readonly Dictionary<Texture2D, nint> _refCache = [];
         private Texture2D _selectedTexture;
 
-        public string Name => "Textures";
+        public string UiSectionName => "Textures";
 
         public void RenderUi()
         {

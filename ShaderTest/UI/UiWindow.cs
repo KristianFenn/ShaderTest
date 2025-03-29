@@ -6,7 +6,7 @@ namespace ShaderTest.UI
     public class UiWindow
     {
         public ImGuiRenderer Renderer { get; init; }
-        private List<IHasUi> _tabs = [];
+        private Dictionary<string, List<IHasUi>> _tabs = [];
         private string _current;
 
         public UiWindow(Game game)
@@ -15,10 +15,16 @@ namespace ShaderTest.UI
             Renderer.RebuildFontAtlas();
         }
 
-        public void AddTab(IHasUi ui)
+        public void AddToTab(string tab, IHasUi ui)
         {
-            _tabs.Add(ui);
-            _current ??= ui.Name;
+            if (!_tabs.TryGetValue(tab, out List<IHasUi> sections))
+            {
+                sections = [];
+                _tabs.Add(tab, sections);
+            }
+
+            sections.Add(ui);
+            _current ??= tab;
         }
 
         public void RenderUi(GameTime gameTime)
@@ -28,17 +34,25 @@ namespace ShaderTest.UI
             ImGui.Begin("Debug");
 
             ImGui.BeginTabBar(_current);
-            foreach (IHasUi ui in _tabs)
+            foreach (var (tab, _) in _tabs)
             {
-                var flags = _current == ui.Name ? ImGuiTabItemFlags.SetSelected : ImGuiTabItemFlags.None;
-                if (ImGui.TabItemButton(ui.Name, flags))
+                var flags = _current == tab ? ImGuiTabItemFlags.SetSelected : ImGuiTabItemFlags.None;
+                if (ImGui.TabItemButton(tab, flags))
                 {
-                    _current = ui.Name;
+                    _current = tab;
                 }
             }
             ImGui.EndTabBar();
 
-            _tabs.Single(t => t.Name == _current).RenderUi();
+            var sections = _tabs[_current];
+
+            foreach (var section in sections)
+            {
+                if (ImGui.CollapsingHeader(section.UiSectionName))
+                {
+                    section.RenderUi();
+                }
+            }
 
             ImGui.End();
 

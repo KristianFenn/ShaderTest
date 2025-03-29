@@ -9,7 +9,7 @@ namespace ShaderTest.UI
         private ModelEntity _selectedEntity = null;
         private string _selectedBone = "";
 
-        public string Name => "Entity";
+        public string UiSectionName => "Entity";
 
         public override void Update(GameTime gameTime)
         {

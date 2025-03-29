@@ -19,6 +19,7 @@ namespace ShaderTest
         private RenderTarget2D _shadowMap;
         private Texture2D _pixel;
         private GameStats _stats;
+        private Skybox _skybox;
         private Sun _sun;
         private List<Updatable> _updatable;
         private UiWindow _uiWindow;
@@ -28,6 +29,7 @@ namespace ShaderTest
         private RenderTarget2D _depthMap;
         private RenderTargetBinding[] _deferredRenderTargetBindings;
         private VertexBuffer _fullScreenQuad;
+        private RenderControl _render;
 
         public ShaderTestGame()
         {
@@ -64,7 +66,7 @@ namespace ShaderTest
 
             Camera = new Camera(this);
             _updatable.Add(Camera);
-            _uiWindow.AddTab(Camera);
+            _uiWindow.AddToTab("Render", Camera);
 
             _arial = Content.Load<SpriteFont>("Arial");
             _shadowMap = new RenderTarget2D(GraphicsDevice, 4096, 4096, false, SurfaceFormat.Single, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents)
@@ -111,12 +113,12 @@ namespace ShaderTest
             ];
 
             _fullScreenQuad = new VertexBuffer(GraphicsDevice, typeof(VertexPositionTexture), 4, BufferUsage.WriteOnly);
-
+            
             _fullScreenQuad.SetData([
-                new VertexPositionTexture(new Vector3(-1, -1, 0), new Vector2(0, 1)),
-                new VertexPositionTexture(new Vector3(-1, 1, 0), new Vector2(0, 0)),
-                new VertexPositionTexture(new Vector3(1, -1, 0), new Vector2(1, 1)),
-                new VertexPositionTexture(new Vector3(1, 1, 0), new Vector2(1, 0)),
+                new VertexPositionTexture(new Vector3(-1, -1, GraphicsDevice.Viewport.MinDepth), new Vector2(0, 1)),
+                new VertexPositionTexture(new Vector3(-1, 1, GraphicsDevice.Viewport.MinDepth), new Vector2(0, 0)),
+                new VertexPositionTexture(new Vector3(1, -1, GraphicsDevice.Viewport.MinDepth), new Vector2(1, 1)),
+                new VertexPositionTexture(new Vector3(1, 1, GraphicsDevice.Viewport.MinDepth), new Vector2(1, 0)),
             ]);
 
             var entityFactory = new EntityFactory(Content);
@@ -126,9 +128,13 @@ namespace ShaderTest
             Entities.Add(entityFactory.CreateEntity<CarEntity>("Car"));
             Entities.Add(entityFactory.CreateEntity<TentEntity>("Tent"));
 
+            _skybox = new Skybox();
+            _skybox.Initialise(GraphicsDevice);
+            _uiWindow.AddToTab("Render", _skybox);
+
             _sun = new Sun(this);
             _updatable.Add(_sun);
-            _uiWindow.AddTab(_sun);
+            _uiWindow.AddToTab("Render", _sun);
 
             Mouse = new MouseInputHandler(this);
             _updatable.Add(Mouse);
@@ -139,7 +145,10 @@ namespace ShaderTest
             var editor = new EntityEdit(this);
 
             _updatable.Add(editor);
-            _uiWindow.AddTab(editor);
+            _uiWindow.AddToTab("Entity", editor);
+
+            _render = new RenderControl();
+            _uiWindow.AddToTab("Render", _render);
 
             var loadedTextures = Content.GetLoaded<Texture2D>();
             McFaceImGui.Initialise([
@@ -152,7 +161,7 @@ namespace ShaderTest
             ]);
 
             var textureView = new TextureView(_uiWindow.Renderer);
-            _uiWindow.AddTab(textureView);
+            _uiWindow.AddToTab("Textures", textureView);
 
             GameDebug.Initialize(GraphicsDevice, _arial);
         }
@@ -197,14 +206,14 @@ namespace ShaderTest
 
             GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
 
-            if (Camera.DrawDeferred)
+            if (_render.DrawDeferred)
             {
                 GraphicsDevice.SetRenderTargets(_deferredRenderTargetBindings);
-                GraphicsDevice.Clear(ClearOptions.DepthBuffer, Color.Black, GraphicsDevice.Viewport.MaxDepth, 0);
+                GraphicsDevice.Clear(Color.Black);
                 GraphicsDevice.BlendState = BlendState.Opaque;
                 GraphicsDevice.DepthStencilState = DepthStencilState.None;
-                GraphicsDevice.SetVertexBuffer(_fullScreenQuad);
 
+                GraphicsDevice.SetVertexBuffer(_fullScreenQuad);
                 GameShaders.Deferred.CurrentTechnique = GameShaders.Deferred.Techniques["ClearDeferredBuffers"];
                 GameShaders.Deferred.CurrentTechnique.Passes[0].Apply();
                 GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
@@ -218,15 +227,18 @@ namespace ShaderTest
                 }
 
                 GraphicsDevice.SetRenderTarget(null);
-                GraphicsDevice.DepthStencilState = DepthStencilState.None;
                 GraphicsDevice.Clear(Color.Black);
 
-                GraphicsDevice.SetVertexBuffer(_fullScreenQuad);
+                if (GameShaders.PbrDeferred.CurrentTechnique != GameShaders.PbrDeferred.Techniques["Draw"])
+                    GraphicsDevice.DepthStencilState = DepthStencilState.None;
 
+                GraphicsDevice.SetVertexBuffer(_fullScreenQuad);
                 GameShaders.PbrDeferred.ApplyRenderContext(Matrix.Identity, renderContext, default);
                 GameShaders.PbrDeferred.CurrentTechnique.Passes[0].Apply();
-
                 GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+
+                if (GameShaders.PbrDeferred.CurrentTechnique == GameShaders.PbrDeferred.Techniques["Draw"])
+                    _skybox.Draw(GraphicsDevice, renderContext);
             }
             else
             {
@@ -237,6 +249,8 @@ namespace ShaderTest
                 {
                     entity.Draw(GraphicsDevice, renderContext, GameShaders.Pbr);
                 }
+
+                _skybox.Draw(GraphicsDevice, renderContext);
             }
 
             _spriteBatch.Begin();
