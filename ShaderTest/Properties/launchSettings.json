@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ShaderTest": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

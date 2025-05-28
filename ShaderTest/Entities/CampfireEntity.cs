@@ -16,7 +16,9 @@ namespace ShaderTest.Entities
                 UseTexture = true,
                 Texture = content.Load<Texture2D>("Models/Campfire/Campfire.Color"),
                 UsePbrMap = false,
+                PbrMap = content.Load<Texture2D>("Models/Shared/Shared.RMA"),
                 UseNormalMap = false,
+                NormalMap = content.Load<Texture2D>("Models/Shared/Shared.Normals"),
                 Roughness = 1.0f,
                 Metallic = 0.0f,
                 AmbientOcclusion = 1.0f

@@ -34,6 +34,7 @@ namespace ShaderTest
         public ShaderTestGame()
         {
             _graphics = new(this);
+            _graphics.GraphicsProfile = GraphicsProfile.HiDef;
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             _graphics.PreferredBackBufferWidth = 1920;

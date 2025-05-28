@@ -17,8 +17,8 @@ bool UseTexture;
 bool UsePbrMap;
 bool UseNormalMap;
 
-Texture2D<float3> Texture;
-SamplerState TextureSampler = sampler_state
+Texture2D<float3> Texture : register(t0);
+SamplerState TextureSampler : register(s0) = sampler_state
 {
     Texture = (Texture);
     Filter = Anisotropic;
@@ -27,15 +27,15 @@ SamplerState TextureSampler = sampler_state
     AddressV = Wrap;
 };
 
-Texture2D<float3> PbrMap;
-SamplerState PbrMapSampler = sampler_state
+Texture2D<float3> PbrMap : register(t1);
+SamplerState PbrMapSampler : register(s1) = sampler_state
 {
     Texture = (PbrMap);
     Filter = None;
 };
 
-Texture2D<float3> NormalMap;
-SamplerState NormalMapSampler = sampler_state
+Texture2D<float3> NormalMap : register(t2);
+SamplerState NormalMapSampler : register(s2) = sampler_state
 {
     Texture = (NormalMap);
     Filter = None;
@@ -89,7 +89,7 @@ V2P VShader(VSInput input)
     return output;
 }
 
-float4 PShaderDrawPBR(V2P input) : COLOR
+float4 PShaderDrawPBR(V2P input) : SV_Target
 {
     float3 albedo = Albedo;
     
@@ -129,7 +129,7 @@ float4 PShaderDrawPBR(V2P input) : COLOR
     return ApplyLightingModel(albedo, roughness, metallic, ao, shadow, normal, -input.ViewPosition.xyz, Exposure, Gamma);
 }
 
-float4 PShaderDrawNormals(V2P input) : COLOR
+float4 PShaderDrawNormals(V2P input) : SV_Target
 {
     float3 normal = normalize(input.ViewNormal);
     
@@ -142,7 +142,7 @@ float4 PShaderDrawNormals(V2P input) : COLOR
     return float4(normal, 1.0f);
 }
 
-float4 PShaderDrawPos(V2P input) : COLOR
+float4 PShaderDrawPos(V2P input) : SV_Target
 {
     float4 col = float4(frac(input.ViewPosition.xyz), 1.0f);
     
@@ -159,17 +159,17 @@ float4 PShaderDrawPos(V2P input) : COLOR
     return col;
 }
 
-float4 PShaderDrawSMPosition(V2P input) : COLOR
+float4 PShaderDrawSMPosition(V2P input) : SV_Target
 {
     return float4(input.SMPosition.xyz, 1.0f);
 }
 
-float4 PShaderDrawWorldPosition(V2P input) : COLOR
+float4 PShaderDrawWorldPosition(V2P input) : SV_Target
 {
     return float4(frac(input.WorldPosition.xyz), 1.0f);
 }
 
-float4 PShaderDrawAlbedo(V2P input) : COLOR
+float4 PShaderDrawAlbedo(V2P input) : SV_Target
 {
     float3 albedo = Albedo;
     
@@ -184,13 +184,13 @@ float4 PShaderDrawAlbedo(V2P input) : COLOR
     return float4(albedo, 1.0f);
 }
 
-float4 PShaderDrawDepth(V2P input) : COLOR
+float4 PShaderDrawDepth(V2P input) : SV_Target
 {
     float depth = input.Depth.x / input.Depth.y;
     return float4(depth.rrr, 1.0f);
 }
 
-float4 PShaderDrawPbr(V2P input) : COLOR
+float4 PShaderDrawPbr(V2P input) : SV_Target
 {
     float roughness = Roughness, metallic = Metallic, ao = AmbientOcclusion;
     

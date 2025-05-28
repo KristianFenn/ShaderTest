@@ -42,7 +42,7 @@ namespace ShaderTest.Updatables
                 if (currentKb.IsKeyDown(Keys.LeftAlt) && Game.Mouse.InScreenBounds)
                 {
                     var moveScaled = Game.Mouse.Move * 0.005f;
-                    Game.Mouse.LockMouse = true;
+                    //Game.Mouse.LockMouse = true;
                     var rotate = Quaternion.CreateFromAxisAngle(Vector3.Up, -moveScaled.X)
                         * Quaternion.CreateFromAxisAngle(cameraLeft, moveScaled.Y);
 

@@ -9,37 +9,37 @@ namespace ShaderTest.Shaders
         public bool UseTexture
         {
             get => GetParameter().GetValueBoolean();
-            set => GetParameter().SetValue(value);
+            set => GetParameter().SetValue(value ? 1 : 0);
         }
 
         public Texture2D Texture
         {
-            get => GetParameter("TextureSampler+Texture").GetValueTexture2D();
-            set => GetParameter("TextureSampler+Texture").SetValue(value);
+            get => GetParameter().GetValueTexture2D();
+            set => GetParameter().SetValue(value);
         }
 
         public bool UsePbrMap
         {
             get => GetParameter().GetValueBoolean();
-            set => GetParameter().SetValue(value);
+            set => GetParameter().SetValue(value ? 1 : 0);
         }
 
         public Texture2D PbrMap
         {
-            get => GetParameter("PbrMapSampler+PbrMap").GetValueTexture2D();
-            set => GetParameter("PbrMapSampler+PbrMap").SetValue(value);
+            get => GetParameter().GetValueTexture2D();
+            set => GetParameter().SetValue(value);
         }
 
         public bool UseNormalMap
         {
             get => GetParameter().GetValueBoolean();
-            set => GetParameter().SetValue(value);
+            set => GetParameter().SetValue(value ? 1 : 0);
         }
 
         public Texture2D NormalMap
         {
-            get => GetParameter("NormalMapSampler+NormalMap").GetValueTexture2D();
-            set => GetParameter("NormalMapSampler+NormalMap").SetValue(value);
+            get => GetParameter().GetValueTexture2D();
+            set => GetParameter().SetValue(value);
         }
 
         public Color Albedo
@@ -68,8 +68,8 @@ namespace ShaderTest.Shaders
 
         public Texture2D ShadowMap
         {
-            get => GetParameter("ShadowMapSampler+ShadowMap").GetValueTexture2D();
-            set => GetParameter("ShadowMapSampler+ShadowMap").SetValue(value);
+            get => GetParameter().GetValueTexture2D();
+            set => GetParameter().SetValue(value);
         }
 
         public override void ApplyRenderContext(Matrix world, RenderContext renderContext, Material material)

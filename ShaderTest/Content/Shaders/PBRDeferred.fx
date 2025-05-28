@@ -6,19 +6,36 @@ float4x3 ViewToShadowMap;
 float Exposure;
 float Gamma;
 
-Texture2D<float4> AlbedoMap;
-Texture2D<float4> NormalMap;
-Texture2D<float> DepthMap;
-Texture2D<float4> PBRMap;
-
-float NearClip;
-float FarClip;
-
-SamplerState MapSampler = sampler_state
+Texture2D<float4> AlbedoMap : register(t0);
+SamplerState AlbedoMapSampler : register(s0) = sampler_state
 {
+    Texture = (AlbedoMap);
     Filter = None;
 };
 
+Texture2D<float4> NormalMap : register(t1);
+SamplerState NormalMapSampler : register(s1) = sampler_state
+{
+    Texture = (NormalMap);
+    Filter = None;
+};
+
+Texture2D<float> DepthMap : register(t2);
+SamplerState DepthMapSampler : register(s2) = sampler_state
+{
+    Texture = (DepthMap);
+    Filter = None;
+};
+
+Texture2D<float4> PBRMap : register(t3);
+SamplerState PBRMapSampler : register(s3) = sampler_state
+{
+    Texture = (PBRMap);
+    Filter = None;
+};
+
+float NearClip;
+float FarClip;
 struct VSInput
 {
     float4 Position : POSITION0;
@@ -33,8 +50,8 @@ struct PSInput
 
 struct PSOutput
 {
-    float4 Color : COLOR0;
-    float Depth : DEPTH0;
+    float4 Color : SV_Target;
+    float Depth : SV_Depth;
 };
     
 PSInput VShader(VSInput input)
@@ -49,22 +66,22 @@ PSInput VShader(VSInput input)
 
 float3 GetAlbedo(float2 TexCoord)
 {
-    return pow(abs(AlbedoMap.Sample(MapSampler, TexCoord).xyz), 2.2f);
+    return pow(abs(AlbedoMap.Sample(AlbedoMapSampler, TexCoord).xyz), 2.2f);
 }
 
 float3 GetNormal(float2 TexCoord)
 {
-    return normalize(2.0f * NormalMap.Sample(MapSampler, TexCoord).xyz - 1.0f);
+    return normalize(2.0f * NormalMap.Sample(NormalMapSampler, TexCoord).xyz - 1.0f);
 }
 
 float GetDepth(float2 TexCoord)
 {
-    return DepthMap.Sample(MapSampler, TexCoord);
+    return DepthMap.Sample(DepthMapSampler, TexCoord);
 }
 
 float3 GetPbr(float2 TexCoord)
 {
-    return PBRMap.Sample(MapSampler, TexCoord).xyz;
+    return PBRMap.Sample(PBRMapSampler, TexCoord).xyz;
 }
 
 float3 GetViewPos(float2 TexCoord, float Depth)
@@ -108,35 +125,35 @@ PSOutput PShaderDrawPbrDeferred(PSInput input)
     return output;
 }
 
-float4 PShaderDrawAlbedoDeferred(PSInput input) : COLOR
+float4 PShaderDrawAlbedoDeferred(PSInput input) : SV_Target
 {
     return float4(GetAlbedo(input.TexCoord), 1.0f);
 }
 
-float4 PShaderDrawNormalDeferred(PSInput input) : COLOR
+float4 PShaderDrawNormalDeferred(PSInput input) : SV_Target
 {
     return float4(GetNormal(input.TexCoord), 1.0f);
 }
 
-float4 PShaderDrawNormalRecreated(PSInput input) : COLOR
+float4 PShaderDrawNormalRecreated(PSInput input) : SV_Target
 {
     float3 normal;
-    normal.xy = 2.0f * NormalMap.Sample(MapSampler, input.TexCoord).xy - 1.0f;
+    normal.xy = 2.0f * NormalMap.Sample(NormalMapSampler, input.TexCoord).xy - 1.0f;
     normal.z = sqrt(1 - dot(normal.xy, normal.yx));
     return float4(normal, 1.0f);
 }
 
-float4 PShaderDrawDepthDeferred(PSInput input) : COLOR
+float4 PShaderDrawDepthDeferred(PSInput input) : SV_Target
 {
     return float4(GetDepth(input.TexCoord).rrr, 1.0f);
 }
 
-float4 PShaderDrawPbrMapDeferred(PSInput input) : COLOR
+float4 PShaderDrawPbrMapDeferred(PSInput input) : SV_Target
 {
     return float4(GetPbr(input.TexCoord), 1.0f);
 }
 
-float4 PShaderDrawPosDeferred(PSInput input) : COLOR
+float4 PShaderDrawPosDeferred(PSInput input) : SV_Target
 {
     float depth = GetDepth(input.TexCoord);
     float3 viewPos = GetViewPos(input.TexCoord, depth);
@@ -156,14 +173,14 @@ float4 PShaderDrawPosDeferred(PSInput input) : COLOR
     return col;
 }
 
-float4 PShaderDrawTexDepthDeferred(PSInput input) : COLOR
+float4 PShaderDrawTexDepthDeferred(PSInput input) : SV_Target
 {
     float depth = GetDepth(input.TexCoord);
     float4 tex_depth = float4(input.TexCoord, depth, 1.0f);    
     return tex_depth;
 }
 
-float4 PShaderDrawSMPosition(PSInput input) : COLOR
+float4 PShaderDrawSMPosition(PSInput input) : SV_Target
 {
     float depth = GetDepth(input.TexCoord);
     float3 viewPos = GetViewPos(input.TexCoord, depth);
@@ -172,7 +189,7 @@ float4 PShaderDrawSMPosition(PSInput input) : COLOR
     return float4(shadowMapPos, 1.0f);
 }
 
-float4 PShaderWorldPos(PSInput input) : COLOR
+float4 PShaderWorldPos(PSInput input) : SV_Target
 {
     float depth = GetDepth(input.TexCoord);
     float3 viewPos = GetViewPos(input.TexCoord, depth);
@@ -181,7 +198,7 @@ float4 PShaderWorldPos(PSInput input) : COLOR
     return float4(frac(worldPos), 1.0f);
 }
 
-float4 PShaderPosition(PSInput input) : COLOR
+float4 PShaderPosition(PSInput input) : SV_Target
 {
     return float4(frac(input.Position.xy), 0.0f, 1.0f);
 }

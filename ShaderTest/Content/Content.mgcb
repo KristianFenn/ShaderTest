@@ -1,8 +1,8 @@
-/outputDir:bin\Debug\net8.0\
-/intermediateDir:obj\Debug\net8.0\
-/platform:DesktopGL
+/outputDir:bin\x64\Debug\net8.0\
+/intermediateDir:obj\x64\Debug\net8.0\
+/platform:DesktopVK
 /config:
-/profile:Reach
+/profile:HiDef
 /compress:false
 
 #begin Shaders\Atmosphere.fx
@@ -319,6 +319,30 @@
 /processorParam:MakeSquare=false
 /processorParam:TextureFormat=color
 /build:Models\Ground\Ground.RMA.png
+
+#begin Models\Shared\Shared.Normals.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=false
+/processorParam:GenerateMipmaps=false
+/processorParam:PremultiplyAlpha=false
+/processorParam:ResizeToPowerOfTwo=false
+/processorParam:MakeSquare=false
+/processorParam:TextureFormat=color
+/build:Models\Shared\Shared.Normals.png
+
+#begin Models\Shared\Shared.RMA.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=false
+/processorParam:GenerateMipmaps=false
+/processorParam:PremultiplyAlpha=false
+/processorParam:ResizeToPowerOfTwo=false
+/processorParam:MakeSquare=false
+/processorParam:TextureFormat=color
+/build:Models\Shared\Shared.RMA.png
 
 #begin Models\Tent\Tent.Color.png
 /importer:TextureImporter

@@ -11,32 +11,32 @@ namespace ShaderTest.Shaders
     {
         public Texture2D AlbedoMap
         {
-            get => GetParameter("MapSampler+AlbedoMap").GetValueTexture2D();
-            set => GetParameter("MapSampler+AlbedoMap").SetValue(value);
+            get => GetParameter().GetValueTexture2D();
+            set => GetParameter().SetValue(value);
         }
 
         public Texture2D NormalMap
         {
-            get => GetParameter("MapSampler+NormalMap").GetValueTexture2D();
-            set => GetParameter("MapSampler+NormalMap").SetValue(value);
+            get => GetParameter().GetValueTexture2D();
+            set => GetParameter().SetValue(value);
         }
 
         public Texture2D PBRMap
         {
-            get => GetParameter("MapSampler+PBRMap").GetValueTexture2D();
-            set => GetParameter("MapSampler+PBRMap").SetValue(value);
+            get => GetParameter().GetValueTexture2D();
+            set => GetParameter().SetValue(value);
         }
 
         public Texture2D DepthMap
         {
-            get => GetParameter("MapSampler+DepthMap").GetValueTexture2D();
-            set => GetParameter("MapSampler+DepthMap").SetValue(value);
+            get => GetParameter().GetValueTexture2D();
+            set => GetParameter().SetValue(value);
         }
 
         public Texture2D ShadowMap
         {
-            get => GetParameter("ShadowMapSampler+ShadowMap").GetValueTexture2D();
-            set => GetParameter("ShadowMapSampler+ShadowMap").SetValue(value);
+            get => GetParameter().GetValueTexture2D();
+            set => GetParameter().SetValue(value);
         }
 
         public override void ApplyRenderContext(Matrix world, RenderContext renderContext, Material material)

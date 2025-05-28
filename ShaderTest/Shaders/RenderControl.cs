@@ -10,7 +10,7 @@ namespace ShaderTest.Shaders
 {
     public class RenderControl : IHasUi
     {
-        private bool _drawDeferred = true;
+        private bool _drawDeferred = false;
         public bool DrawDeferred => _drawDeferred;
 
         public string UiSectionName => "Shader";

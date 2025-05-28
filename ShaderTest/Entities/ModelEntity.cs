@@ -6,7 +6,18 @@ namespace ShaderTest.Entities
     public abstract class ModelEntity
     {
         public string Name { get; init; }
-        public Matrix World { get; protected set; }
+
+        private Matrix _world;
+        public Matrix World 
+        {
+            get => _world; 
+            protected set
+            {
+                _world = Matrix.CreateFromYawPitchRoll(MathHelper.Pi, MathHelper.PiOver2, 0f)
+                    * value;
+            }
+        }
+
         public Model Model { get; protected set; }
         public Dictionary<string, Material> Materials { get; protected set; } = [];
         public abstract bool IncludeInShadowMap { get; }

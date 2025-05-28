@@ -40,7 +40,7 @@ PSInput VShader(float4 position: POSITION0)
     return output;
 }
 
-float4 PShader(PSInput input) : COLOR
+float4 PShader(PSInput input) : SV_Target
 {
     float3 viewDir = normalize(-input.ViewPos.xyz);
     float3 lightDir = normalize(LightPosition);
@@ -48,7 +48,7 @@ float4 PShader(PSInput input) : COLOR
     return float4(RayleighScattering(lightDir, viewDir), 1.0f);
 }
 
-float4 PShaderFlat(PSInput input) : COLOR
+float4 PShaderFlat(PSInput input) : SV_Target
 {
     return float4(0.529f, 0.808f, 0.922f, 1.0f);
 }

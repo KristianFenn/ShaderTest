@@ -3,34 +3,32 @@
   "isRoot": true,
   "tools": {
     "dotnet-mgcb": {
-      "version": "3.8.1.303",
+      "version": "3.8.4-preview.6.1-develop",
       "commands": [
         "mgcb"
-      ]
+      ],
+      "rollForward": false
     },
     "dotnet-mgcb-editor": {
-      "version": "3.8.1.303",
+      "version": "3.8.4-preview.6.1-develop",
       "commands": [
         "mgcb-editor"
-      ]
-    },
-    "dotnet-mgcb-editor-linux": {
-      "version": "3.8.1.303",
-      "commands": [
-        "mgcb-editor-linux"
-      ]
+      ],
+      "rollForward": false
     },
     "dotnet-mgcb-editor-windows": {
-      "version": "3.8.1.303",
+      "version": "3.8.4-preview.6.1-develop",
       "commands": [
         "mgcb-editor-windows"
-      ]
+      ],
+      "rollForward": false
     },
-    "dotnet-mgcb-editor-mac": {
-      "version": "3.8.1.303",
+    "dotnet-mgfxc": {
+      "version": "3.8.4-preview.6.1-develop",
       "commands": [
-        "mgcb-editor-mac"
-      ]
+        "mgfxc"
+      ],
+      "rollForward": false
     }
   }
 }

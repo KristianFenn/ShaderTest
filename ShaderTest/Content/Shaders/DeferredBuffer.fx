@@ -17,8 +17,8 @@ float4x4 ModelToScreen;
 float NearClip;
 float FarClip;
 
-Texture2D<float3> Texture;
-SamplerState TextureSampler = sampler_state
+Texture2D<float3> Texture : register(t0);
+SamplerState TextureSampler : register(s0) = sampler_state
 {
     Texture = (Texture);
     Filter = Anisotropic;
@@ -27,15 +27,15 @@ SamplerState TextureSampler = sampler_state
     AddressV = Wrap;
 };
 
-Texture2D<float3> PbrMap;
-SamplerState PbrMapSampler = sampler_state
+Texture2D<float3> PbrMap : register(t1);
+SamplerState PbrMapSampler : register(s1) = sampler_state
 {
     Texture = (PbrMap);
     Filter = None;
 };
 
-Texture2D<float3> NormalMap;
-SamplerState NormalMapSampler = sampler_state
+Texture2D<float3> NormalMap : register(t2);
+SamplerState NormalMapSampler : register(s2) = sampler_state
 {
     Texture = (NormalMap);
     Filter = None;
@@ -63,10 +63,10 @@ struct V2P
 
 struct PSOutput
 {
-    float4 Albedo : COLOR0;
-    float4 Normal : COLOR1;
-    float4 Depth : COLOR2;
-    float4 Pbr : COLOR3;
+    float4 Albedo : SV_Target0;
+    float4 Normal : SV_Target1;
+    float4 Depth : SV_Target2;
+    float4 Pbr : SV_Target3;
 };
 
 V2P VShader(VSInput input)
@@ -128,12 +128,12 @@ PSOutput PShader(V2P input)
     return output;
 };
 
-float4 VShaderClear(float4 position : POSITION0) : POSITION0
+float4 VShaderClear(float4 position : SV_Position) : SV_Position
 {
     return position;
 }
 
-PSOutput PShaderClear(float4 position : POSITION0)
+PSOutput PShaderClear(float4 position : SV_Position)
 {
     PSOutput output;
     

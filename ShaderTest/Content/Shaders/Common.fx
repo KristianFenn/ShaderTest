@@ -3,8 +3,8 @@
     #define VS_SHADERMODEL vs_3_0
     #define PS_SHADERMODEL ps_3_0
 #else
-    #define VS_SHADERMODEL vs_5_0
-    #define PS_SHADERMODEL ps_5_0
+    #define VS_SHADERMODEL vs_6_0
+    #define PS_SHADERMODEL ps_6_0
 #endif
 
 #define TECHNIQUE(name, vertexShader, pixelShader) \
@@ -12,13 +12,13 @@
 
 static const float Pi = 3.14159265f;
 
-Texture2D<float> ShadowMap;
-SamplerState ShadowMapSampler = sampler_state
+Texture2D<float> ShadowMap : register(t15);
+SamplerState ShadowMapSampler : register(s15) = sampler_state
 {
     Texture = (ShadowMap);
     Filter = None;
 };
 
 float4 __DV(float4 p : POSITION) : SV_Position { return p; }
-float4 __DP(float4 p : SV_Position) : COLOR0 { return p.xxxx; }
+float4 __DP(float4 p : SV_Position) : SV_Target { return p.xxxx; }
 TECHNIQUE(Dummy, __DV, __DP);
