@@ -6,6 +6,7 @@
     <ItemGroup>
       <MonoGameFbxAsset Update="*.fbx">
         <RotationX>-90</RotationX>
+        <RotationY>0</RotationY>
         <GenerateTangentFrames>true</GenerateTangentFrames>
       </MonoGameFbxAsset>
     </ItemGroup>

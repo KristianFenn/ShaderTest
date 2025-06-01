@@ -11,18 +11,7 @@ namespace ShaderTest.Entities
             Model = content.Load<Model>("Models/Ground/Ground");
             World = Matrix.CreateScale(2f) * Matrix.CreateTranslation(3f, -2f, 0f);
 
-            Materials.Add("Default", new Material
-            {
-                UseTexture = true,
-                Texture = content.Load<Texture2D>("Models/Ground/Ground.Color"),
-                UsePbrMap = true,
-                PbrMap = content.Load<Texture2D>("Models/Ground/Ground.RMA"),
-                UseNormalMap = true,
-                NormalMap = content.Load<Texture2D>("Models/Ground/Ground.Normals"),
-                Roughness = 1.0f,
-                Metallic = 0.0f,
-                AmbientOcclusion = 1.0f
-            });
+            Materials.Add("Default", Material.Load(content, "Models/Ground", "Ground"));
         }
     }
 }

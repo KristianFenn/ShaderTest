@@ -12,18 +12,7 @@ namespace ShaderTest.Entities
             World = Matrix.CreateFromAxisAngle(Vector3.Up, MathHelper.ToRadians(120f))
                 * Matrix.CreateTranslation(3f, -2f, 4f);
 
-            Materials.Add("Default", new Material
-            {
-                UseTexture = true,
-                Texture = content.Load<Texture2D>("Models/Tent/Tent.Color"),
-                UsePbrMap = false,
-                PbrMap = content.Load<Texture2D>("Models/Shared/Shared.RMA"),
-                UseNormalMap = false,
-                NormalMap = content.Load<Texture2D>("Models/Shared/Shared.Normals"),
-                Roughness = 0.5f,
-                Metallic = 0.0f,
-                AmbientOcclusion = 1.0f
-            });
+            Materials.Add("Default", Material.Load(content, "Models/Tent", "Tent"));
         }
     }
 }

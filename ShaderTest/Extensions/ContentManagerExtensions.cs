@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Content;
+using System.IO;
 using System.Reflection;
 
 namespace ShaderTest.Extensions
@@ -13,6 +14,18 @@ namespace ShaderTest.Extensions
             return loadedAssets.Where(a => a.Value is T)
                 .Select(a => a.Value)
                 .Cast<T>();
+        }
+
+        public static T TryLoad<T>(this ContentManager contentManager, string path)
+        {
+            var targetPath = Path.Join(contentManager.RootDirectory, $"{path}.xnb");
+
+            if (File.Exists(targetPath))
+            {
+                return contentManager.Load<T>(path);
+            }
+
+            return default;
         }
     }
 }

@@ -15,31 +15,8 @@ namespace ShaderTest.Entities
                 * Matrix.CreateFromAxisAngle(Vector3.Up, MathHelper.ToRadians(-20f))
                 * Matrix.CreateTranslation(_position);
 
-            Materials.Add("Default", new Material
-            {
-                UseTexture = true,
-                Texture = content.Load<Texture2D>("Models/Car/Car.Color"),
-                UsePbrMap = true,
-                PbrMap = content.Load<Texture2D>("Models/Car/Car.RMA"),
-                UseNormalMap = true,
-                NormalMap = content.Load<Texture2D>("Models/Car/Car.Normals"),
-                Roughness = 0.2f,
-                Metallic = 0.5f,
-                AmbientOcclusion = 1.0f
-            });
-
-            Materials.Add("Wheel.FL", new Material
-            {
-                UseTexture = true,
-                Texture = content.Load<Texture2D>("Models/Car/Tyre.Color"),
-                UsePbrMap = false,
-                PbrMap = content.Load<Texture2D>("Models/Shared/Shared.RMA"),
-                UseNormalMap = false,
-                NormalMap = content.Load<Texture2D>("Models/Shared/Shared.Normals"),
-                Roughness = 0.5f,
-                Metallic = 0.5f,
-                AmbientOcclusion = 1.0f
-            });
+            Materials.Add("Default", Material.Load(content, "Models/Car", "Car"));
+            Materials.Add("Wheel.FL", Material.Load(content, "Models/Car", "Tyre"));
         }
     }
 }

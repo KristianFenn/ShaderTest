@@ -10,12 +10,8 @@ namespace ShaderTest.Entities
         private Matrix _world;
         public Matrix World 
         {
-            get => _world; 
-            protected set
-            {
-                _world = Matrix.CreateFromYawPitchRoll(MathHelper.Pi, MathHelper.PiOver2, 0f)
-                    * value;
-            }
+            get => _world;
+            set => _world = value;
         }
 
         public Model Model { get; protected set; }

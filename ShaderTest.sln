@@ -5,6 +5,10 @@ VisualStudioVersion = 17.12.35506.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShaderTest", "ShaderTest\ShaderTest.csproj", "{2E3992D4-C6B8-49AB-A3DC-3C881FF281F3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "desktopvk", "..\MonoGame\native\monogame\desktopvk.vcxproj", "{60D6243F-CC40-D9B5-157F-8A5B8128B70A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoGame.Framework.Native", "..\MonoGame\MonoGame.Framework\MonoGame.Framework.Native.csproj", "{6D048B93-116D-753C-2E33-48C193ECFE2E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,22 @@ Global
 		{2E3992D4-C6B8-49AB-A3DC-3C881FF281F3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2E3992D4-C6B8-49AB-A3DC-3C881FF281F3}.Release|x64.ActiveCfg = Release|x64
 		{2E3992D4-C6B8-49AB-A3DC-3C881FF281F3}.Release|x64.Build.0 = Release|x64
+		{60D6243F-CC40-D9B5-157F-8A5B8128B70A}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{60D6243F-CC40-D9B5-157F-8A5B8128B70A}.Debug|Any CPU.Build.0 = Debug|x64
+		{60D6243F-CC40-D9B5-157F-8A5B8128B70A}.Debug|x64.ActiveCfg = Debug|x64
+		{60D6243F-CC40-D9B5-157F-8A5B8128B70A}.Debug|x64.Build.0 = Debug|x64
+		{60D6243F-CC40-D9B5-157F-8A5B8128B70A}.Release|Any CPU.ActiveCfg = Release|x64
+		{60D6243F-CC40-D9B5-157F-8A5B8128B70A}.Release|Any CPU.Build.0 = Release|x64
+		{60D6243F-CC40-D9B5-157F-8A5B8128B70A}.Release|x64.ActiveCfg = Release|x64
+		{60D6243F-CC40-D9B5-157F-8A5B8128B70A}.Release|x64.Build.0 = Release|x64
+		{6D048B93-116D-753C-2E33-48C193ECFE2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D048B93-116D-753C-2E33-48C193ECFE2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D048B93-116D-753C-2E33-48C193ECFE2E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6D048B93-116D-753C-2E33-48C193ECFE2E}.Debug|x64.Build.0 = Debug|Any CPU
+		{6D048B93-116D-753C-2E33-48C193ECFE2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D048B93-116D-753C-2E33-48C193ECFE2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D048B93-116D-753C-2E33-48C193ECFE2E}.Release|x64.ActiveCfg = Release|Any CPU
+		{6D048B93-116D-753C-2E33-48C193ECFE2E}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
